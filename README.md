@@ -17,8 +17,8 @@
    <application>
    	...  
    	<provider
-   		android:name="android.support.v4.content.FileProvider"
-   		android:authorities="${applicationId}.fileprovider"
+   		android:name="com.github.logviewer.LogcatFileProvider"
+   		android:authorities="${applicationId}.logcat_fileprovider"
    		android:grantUriPermissions="true"
    		android:exported="false">
    		<meta-data

@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
-import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -110,8 +109,8 @@ public class LogcatActivity extends AppCompatActivity {
                     } else {
                         Intent shareIntent = new Intent(Intent.ACTION_SEND);
                         shareIntent.setType("text/plain");
-                        Uri uri = FileProvider.getUriForFile(getApplicationContext(),
-                                getPackageName() + ".fileprovider", file);
+                        Uri uri = LogcatFileProvider.getUriForFile(getApplicationContext(),
+                                getPackageName() + ".logcat_fileprovider", file);
                         shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
                         if (getPackageManager().queryIntentActivities(
                                 shareIntent, 0).isEmpty()) {
