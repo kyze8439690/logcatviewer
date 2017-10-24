@@ -1,0 +1,23 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="com.github.logviewer">
+
+    <application>
+        <activity
+            android:name="com.github.logviewer.LogcatActivity"
+            android:label=""
+            android:theme="@style/AppTheme.NoActionBar"
+            />
+
+        <activity
+            android:name="com.github.logviewer.LogcatDetailActivity"
+            android:label="Log detail"
+            android:theme="@style/AppTheme"
+            >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.github.logviewer.LogcatActivity"/>
+        </activity>
+
+    </application>
+
+</manifest>
