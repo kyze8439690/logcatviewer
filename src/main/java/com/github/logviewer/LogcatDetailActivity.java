@@ -16,7 +16,7 @@ import java.util.Locale;
 public class LogcatDetailActivity extends AppCompatActivity {
 
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat(
-            "YYYY-MM-dd hh:mm:ss.SSS", Locale.getDefault());
+            "MM-dd hh:mm:ss.SSS", Locale.getDefault());
     private static final String CONTENT_TEMPLATE
             = "Time: %s\nPid: %d\nTid: %d\nPriority: %s\nTag: %s\n\nContent: \n%s";
 
