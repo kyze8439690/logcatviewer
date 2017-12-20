@@ -129,7 +129,12 @@ public class LogcatActivity extends AppCompatActivity {
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(context)) {
                 Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                         Uri.parse("package:" + getPackageName()));
-                startActivityForResult(intent, REQUEST_SCREEN_OVERLAY);
+                if (getPackageManager().queryIntentActivities(intent, 0).isEmpty()) {
+                    Snackbar.make(mRoot, R.string.not_support_on_this_device,
+                            Snackbar.LENGTH_SHORT).show();
+                } else {
+                    startActivityForResult(intent, REQUEST_SCREEN_OVERLAY);
+                }
             } else {
                 FloatingLogcatService.launch(context);
                 finish();
