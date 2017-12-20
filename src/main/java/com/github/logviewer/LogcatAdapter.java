@@ -125,7 +125,7 @@ public class LogcatAdapter extends BaseAdapter implements Filterable {
     public static class Holder {
 
         private static final SimpleDateFormat sDateFormat = new SimpleDateFormat(
-                "hh:mm:ss.SSS", Locale.getDefault());
+                "MM-dd hh:mm:ss.SSS", Locale.getDefault());
 
         TextView tag;
         TextView time;
