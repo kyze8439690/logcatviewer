@@ -1,6 +1,7 @@
 package com.github.logviewer;
 
 
+import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -72,6 +73,7 @@ public class FloatingLogcatService extends Service {
         super.onDestroy();
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private void initViews() {
         final WindowManager.LayoutParams params;
         final WindowManager wm = (WindowManager) getSystemService(WINDOW_SERVICE);
@@ -170,6 +172,9 @@ public class FloatingLogcatService extends Service {
                         mFirstY = mLastY;
                         break;
                     case MotionEvent.ACTION_UP:
+                        if (!mIntercepted) {
+                            v.performClick();
+                        }
                         break;
                     case MotionEvent.ACTION_MOVE:
                         int deltaX = (int) event.getRawX() - mLastX;
