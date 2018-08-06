@@ -23,7 +23,7 @@ public class LogItem implements Parcelable {
     private static final String PRIORITY_FATAL = "F";
 
     private static final Pattern sLogcatPattern = Pattern.compile(
-              "([0-9^-]+-[0-9^ ]+ [0-9^:]+:[0-9^:]+\\.[0-9]+) +([0-9]+) +([0-9]+) ([VDIWEF]) ([^:]+): (.*)");
+              "([0-9^-]+-[0-9^ ]+ [0-9^:]+:[0-9^:]+\\.[0-9]+) +([0-9]+) +([0-9]+) ([VDIWEF]) ([^ ]*) *: (.*)");
     private static final SimpleDateFormat sDataFormat = new SimpleDateFormat(
             "MM-dd hh:mm:ss.SSS", Locale.getDefault());
 
