@@ -38,3 +38,5 @@
 
 ### Screenshot
 
+<img src="http://obknz832f.bkt.clouddn.com/device-2018-09-13-222250.png" style="width: 270px; height: 585px;"/>
+<img src="http://obknz832f.bkt.clouddn.com/device-2018-09-13-222220.png" style="width: 270px; height: 585px;"/>
