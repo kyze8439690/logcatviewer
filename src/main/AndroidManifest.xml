@@ -5,13 +5,13 @@
         <activity
             android:name="com.github.logviewer.LogcatActivity"
             android:label=""
-            android:theme="@style/AppTheme.NoActionBar"
+            android:theme="@style/Theme.AppCompat.NoActionBar"
             />
 
         <activity
             android:name="com.github.logviewer.LogcatDetailActivity"
             android:label="Log detail"
-            android:theme="@style/AppTheme"
+            android:theme="@style/Theme.AppCompat"
             >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

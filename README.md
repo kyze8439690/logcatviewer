@@ -28,7 +28,6 @@
    </application>
    ```
 
-
 3. Add launch code in your code:
 
    ```java
@@ -37,4 +36,5 @@
    }
    ```
 
-   ​
+### Screenshot
+
