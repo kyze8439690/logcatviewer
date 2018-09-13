@@ -20,6 +20,8 @@
                 android:value="com.github.logviewer.LogcatActivity"/>
         </activity>
 
+        <service android:name="com.github.logviewer.FloatingLogcatService"/>
+
     </application>
 
 </manifest>
