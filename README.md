@@ -38,5 +38,5 @@
 
 ### Screenshot
 
-<img src="http://obknz832f.bkt.clouddn.com/device-2018-09-13-222250.png" style="width: 270px; height: 585px;"/>
-<img src="http://obknz832f.bkt.clouddn.com/device-2018-09-13-222220.png" style="width: 270px; height: 585px;"/>
+![](http://obknz832f.bkt.clouddn.com/device-2018-09-13-222250.png?imageView2/2/w/270/h/585)
+![](http://obknz832f.bkt.clouddn.com/device-2018-09-13-222220.png?imageView2/2/w/270/h/585)
