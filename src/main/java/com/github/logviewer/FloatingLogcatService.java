@@ -50,6 +50,10 @@ public class FloatingLogcatService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        if (mReading) {
+            return super.onStartCommand(intent, flags, startId);
+        }
+
         ContextThemeWrapper context = new ContextThemeWrapper(this, R.style.Theme_AppCompat_NoActionBar);
         mRoot = View.inflate(context, R.layout.activity_logcat, null);
         mToolbar = mRoot.findViewById(R.id.toolbar);
