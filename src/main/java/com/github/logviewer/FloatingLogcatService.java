@@ -40,7 +40,7 @@ public class FloatingLogcatService extends Service {
     private ListView mList;
 
     private LogcatAdapter mAdapter = new LogcatAdapter();
-    private boolean mReading = false;
+    private volatile boolean mReading = false;
 
     @Nullable
     @Override
