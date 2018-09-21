@@ -214,9 +214,10 @@ public class FloatingLogcatService extends Service {
             public void run() {
                 super.run();
                 mReading = true;
+                BufferedReader reader = null;
                 try {
                     Process process = new ProcessBuilder("logcat", "-v", "threadtime").start();
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                    reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
                     String line;
                     while (mReading && (line = reader.readLine()) != null) {
                         if (LogItem.IGNORED_LOG.contains(line)) {
@@ -238,6 +239,13 @@ public class FloatingLogcatService extends Service {
                 } catch (IOException e) {
                     e.printStackTrace();
                     stopReadLogcat();
+                }
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }.start();
