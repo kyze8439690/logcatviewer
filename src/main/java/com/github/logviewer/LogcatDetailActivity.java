@@ -3,6 +3,8 @@ package com.github.logviewer;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -25,20 +27,21 @@ public class LogcatDetailActivity extends AppCompatActivity {
                 .putExtra("log", log));
     }
 
-    private TextView mContent;
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            getWindow().setNavigationBarColor(Color.parseColor("#1a1a1a"));
+        }
         setContentView(R.layout.activity_logcat_detail);
-        mContent = findViewById(R.id.content);
+        TextView content = findViewById(R.id.content);
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
         LogItem log = getIntent().getParcelableExtra("log");
-        mContent.setText(String.format(Locale.getDefault(), CONTENT_TEMPLATE,
+        content.setText(String.format(Locale.getDefault(), CONTENT_TEMPLATE,
                 DATE_FORMAT.format(log.time), log.processId, log.threadId, log.priority, log.tag,
                 log.content));
     }

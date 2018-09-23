@@ -1,8 +1,10 @@
 package com.github.logviewer;
 
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -36,8 +38,6 @@ public class LogcatActivity extends AppCompatActivity {
     private static final int REQUEST_SCREEN_OVERLAY = 23453;
 
     private View mRoot;
-    private Toolbar mToolbar;
-    private Spinner mSpinner;
     private ListView mList;
 
     private LogcatAdapter mAdapter = new LogcatAdapter();
@@ -46,13 +46,16 @@ public class LogcatActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            getWindow().setNavigationBarColor(Color.parseColor("#1a1a1a"));
+        }
         setContentView(R.layout.activity_logcat);
         mRoot = findViewById(R.id.root);
-        mToolbar = findViewById(R.id.toolbar);
-        mSpinner = findViewById(R.id.spinner);
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        Spinner spinner = findViewById(R.id.spinner);
         mList = findViewById(R.id.list);
 
-        setSupportActionBar(mToolbar);
+        setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
@@ -60,8 +63,8 @@ public class LogcatActivity extends AppCompatActivity {
         ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(this,
                 R.array.logcat_spinner, R.layout.item_logcat_dropdown);
         spinnerAdapter.setDropDownViewResource(R.layout.item_logcat_dropdown);
-        mSpinner.setAdapter(spinnerAdapter);
-        mSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        spinner.setAdapter(spinnerAdapter);
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String filter = getResources().getStringArray(R.array.logcat_spinner)[position];
@@ -100,6 +103,7 @@ public class LogcatActivity extends AppCompatActivity {
             mAdapter.clear();
             return true;
         } else if (item.getItemId() == R.id.export) {
+            @SuppressLint("StaticFieldLeak")
             ExportLogFileTask task = new ExportLogFileTask(getExternalCacheDir()) {
                 @Override
                 protected void onPostExecute(File file) {
