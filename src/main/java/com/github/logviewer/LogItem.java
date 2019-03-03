@@ -2,7 +2,7 @@ package com.github.logviewer;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.support.annotation.ColorRes;
+import androidx.annotation.ColorRes;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
