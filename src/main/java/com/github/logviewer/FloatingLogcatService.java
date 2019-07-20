@@ -9,8 +9,6 @@ import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.os.Build;
 import android.os.IBinder;
-import androidx.annotation.Nullable;
-import androidx.appcompat.widget.Toolbar;
 import android.view.ContextThemeWrapper;
 import android.view.Display;
 import android.view.Gravity;
@@ -22,6 +20,9 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Spinner;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -69,7 +70,7 @@ public class FloatingLogcatService extends Service {
     @Override
     public void onDestroy() {
         WindowManager wm = (WindowManager) getSystemService(WINDOW_SERVICE);
-        if (wm != null) {
+        if (wm != null && mRoot != null) {
             wm.removeView(mRoot);
         }
 

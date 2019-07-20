@@ -1,30 +1,33 @@
 package com.github.logviewer;
 
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
 public class LogcatDetailActivity extends AppCompatActivity {
 
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat(
-            "MM-dd hh:mm:ss.SSS", Locale.getDefault());
     private static final String CONTENT_TEMPLATE
             = "Time: %s\nPid: %d\nTid: %d\nPriority: %s\nTag: %s\n\nContent: \n%s";
 
     public static void launch(Context context, LogItem log) {
-        context.startActivity(new Intent(context, LogcatDetailActivity.class)
-                .putExtra("log", log));
+        Intent intent = new Intent(context, LogcatDetailActivity.class)
+                .putExtra("log", log);
+        if (!(context instanceof Activity)) {
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        }
+        context.startActivity(intent);
     }
 
     @Override
@@ -42,8 +45,8 @@ public class LogcatDetailActivity extends AppCompatActivity {
 
         LogItem log = getIntent().getParcelableExtra("log");
         content.setText(String.format(Locale.getDefault(), CONTENT_TEMPLATE,
-                DATE_FORMAT.format(log.time), log.processId, log.threadId, log.priority, log.tag,
-                log.content));
+                new SimpleDateFormat("MM-dd hh:mm:ss.SSS", Locale.getDefault()).format(
+                        log.time), log.processId, log.threadId, log.priority, log.tag, log.content));
     }
 
     @Override
