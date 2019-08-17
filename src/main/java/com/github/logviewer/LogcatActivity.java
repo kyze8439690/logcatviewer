@@ -10,10 +10,6 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
-import androidx.annotation.Nullable;
-import com.google.android.material.snackbar.Snackbar;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -22,6 +18,11 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Spinner;
 
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+
+import com.google.android.material.snackbar.Snackbar;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -171,8 +172,6 @@ public class LogcatActivity extends AppCompatActivity {
         stopReadLogcat();
     }
 
-    // sample:
-    // 10-21 16:01:46.539  1949  2233 I NetworkController.MobileSignalController(2):  showDisableIcon:false
     private void startReadLogcat() {
         new Thread() {
             @Override
