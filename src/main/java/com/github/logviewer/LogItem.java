@@ -2,6 +2,7 @@ package com.github.logviewer;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+
 import androidx.annotation.ColorRes;
 
 import java.text.ParseException;
@@ -102,9 +103,6 @@ public class LogItem implements Parcelable {
         dest.writeString(this.tag);
         dest.writeString(this.content);
         dest.writeString(this.origin);
-    }
-
-    public LogItem() {
     }
 
     private LogItem(Parcel in) {

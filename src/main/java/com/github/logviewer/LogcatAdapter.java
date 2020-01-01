@@ -1,7 +1,6 @@
 package com.github.logviewer;
 
 
-import androidx.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +8,8 @@ import android.widget.BaseAdapter;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.TextView;
+
+import androidx.annotation.Nullable;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
