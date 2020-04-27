@@ -6,14 +6,13 @@
     <application>
         <activity
             android:name="com.github.logviewer.LogcatActivity"
-            android:label=""
-            android:theme="@style/Theme.AppCompat.NoActionBar"
+            android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar"
             />
 
         <activity
             android:name="com.github.logviewer.LogcatDetailActivity"
             android:label="Log detail"
-            android:theme="@style/Theme.AppCompat"
+            android:theme="@style/Theme.MaterialComponents.DayNight"
             >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
