@@ -9,5 +9,5 @@
     android:padding="12dp"
     android:textStyle="bold"
     android:textSize="18sp"
-    android:textColor="@color/white"
+    android:textColor="?android:attr/textColorPrimary"
     android:singleLine="true"/>

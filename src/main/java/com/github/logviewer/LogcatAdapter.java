@@ -7,9 +7,10 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Filter;
 import android.widget.Filterable;
-import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+
+import com.github.logviewer.databinding.ItemLogcatBinding;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -47,7 +48,7 @@ public class LogcatAdapter extends BaseAdapter implements Filterable {
 
     public LogItem[] getData() {
         synchronized (LogcatAdapter.class) {
-            return mData.toArray(new LogItem[mData.size()]);
+            return mData.toArray(new LogItem[0]);
         }
     }
 
@@ -128,23 +129,19 @@ public class LogcatAdapter extends BaseAdapter implements Filterable {
         private static final SimpleDateFormat sDateFormat = new SimpleDateFormat(
                 "MM-dd hh:mm:ss.SSS", Locale.getDefault());
 
-        TextView tag;
-        TextView time;
-        TextView content;
+        private ItemLogcatBinding mBinding;
 
         Holder(View item) {
-            tag = item.findViewById(R.id.tag);
-            time = item.findViewById(R.id.time);
-            content = item.findViewById(R.id.content);
+            mBinding = ItemLogcatBinding.bind(item);
             item.setTag(this);
         }
 
         void parse(LogItem data) {
-            time.setText(String.format(Locale.getDefault(),"%s %d-%d/%s",
+            mBinding.time.setText(String.format(Locale.getDefault(),"%s %d-%d/%s",
                     sDateFormat.format(data.time), data.processId, data.threadId, data.tag));
-            content.setText(data.content);
-            tag.setText(data.priority);
-            tag.setBackgroundResource(data.getColorRes());
+            mBinding.content.setText(data.content);
+            mBinding.tag.setText(data.priority);
+            mBinding.tag.setBackgroundResource(data.getColorRes());
         }
     }
 }

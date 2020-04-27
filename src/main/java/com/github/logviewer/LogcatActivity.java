@@ -4,7 +4,6 @@ package com.github.logviewer;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -16,12 +15,11 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Spinner;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 
+import com.github.logviewer.databinding.ActivityLogcatBinding;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.BufferedReader;
@@ -32,14 +30,9 @@ import java.text.ParseException;
 
 public class LogcatActivity extends AppCompatActivity {
 
-    public static void launch(Context context) {
-        context.startActivity(new Intent(context, LogcatActivity.class));
-    }
-
     private static final int REQUEST_SCREEN_OVERLAY = 23453;
 
-    private View mRoot;
-    private ListView mList;
+    private ActivityLogcatBinding mBinding;
 
     private LogcatAdapter mAdapter = new LogcatAdapter();
     private boolean mReading = false;
@@ -47,16 +40,10 @@ public class LogcatActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getWindow().setNavigationBarColor(Color.parseColor("#1a1a1a"));
-        }
-        setContentView(R.layout.activity_logcat);
-        mRoot = findViewById(R.id.root);
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        Spinner spinner = findViewById(R.id.spinner);
-        mList = findViewById(R.id.list);
+        mBinding = ActivityLogcatBinding.inflate(getLayoutInflater());
+        setContentView(mBinding.getRoot());
 
-        setSupportActionBar(toolbar);
+        setSupportActionBar(mBinding.toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
@@ -64,8 +51,8 @@ public class LogcatActivity extends AppCompatActivity {
         ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(this,
                 R.array.logcat_spinner, R.layout.item_logcat_dropdown);
         spinnerAdapter.setDropDownViewResource(R.layout.item_logcat_dropdown);
-        spinner.setAdapter(spinnerAdapter);
-        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        mBinding.spinner.setAdapter(spinnerAdapter);
+        mBinding.spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String filter = getResources().getStringArray(R.array.logcat_spinner)[position];
@@ -78,10 +65,10 @@ public class LogcatActivity extends AppCompatActivity {
             }
         });
 
-        mList.setTranscriptMode(ListView.TRANSCRIPT_MODE_NORMAL);
-        mList.setStackFromBottom(true);
-        mList.setAdapter(mAdapter);
-        mList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        mBinding.list.setTranscriptMode(ListView.TRANSCRIPT_MODE_NORMAL);
+        mBinding.list.setStackFromBottom(true);
+        mBinding.list.setAdapter(mAdapter);
+        mBinding.list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 LogcatDetailActivity.launch(LogcatActivity.this, mAdapter.getItem(position));
@@ -109,7 +96,7 @@ public class LogcatActivity extends AppCompatActivity {
                 @Override
                 protected void onPostExecute(File file) {
                     if (file == null) {
-                        Snackbar.make(mRoot, R.string.create_log_file_failed, Snackbar.LENGTH_SHORT)
+                        Snackbar.make(mBinding.root, R.string.create_log_file_failed, Snackbar.LENGTH_SHORT)
                                 .show();
                     } else {
                         Intent shareIntent = new Intent(Intent.ACTION_SEND);
@@ -119,7 +106,7 @@ public class LogcatActivity extends AppCompatActivity {
                         shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
                         if (getPackageManager().queryIntentActivities(
                                 shareIntent, 0).isEmpty()) {
-                            Snackbar.make(mRoot, R.string.not_support_on_this_device,
+                            Snackbar.make(mBinding.root, R.string.not_support_on_this_device,
                                     Snackbar.LENGTH_SHORT).show();
                         } else {
                             startActivity(shareIntent);
@@ -135,7 +122,7 @@ public class LogcatActivity extends AppCompatActivity {
                 Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                         Uri.parse("package:" + getPackageName()));
                 if (getPackageManager().queryIntentActivities(intent, 0).isEmpty()) {
-                    Snackbar.make(mRoot, R.string.not_support_on_this_device,
+                    Snackbar.make(mBinding.root, R.string.not_support_on_this_device,
                             Snackbar.LENGTH_SHORT).show();
                 } else {
                     startActivityForResult(intent, REQUEST_SCREEN_OVERLAY);
@@ -189,7 +176,7 @@ public class LogcatActivity extends AppCompatActivity {
                         }
                         try {
                             final LogItem item = new LogItem(line);
-                            mList.post(new Runnable() {
+                            mBinding.list.post(new Runnable() {
                                 @Override
                                 public void run() {
                                     mAdapter.append(item);

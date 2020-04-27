@@ -17,9 +17,12 @@ apply plugin: 'com.android.library'
 apply plugin: 'maven'
 
 android {
+    viewBinding {
+        enabled = true
+    }
+
     compileSdkVersion 29
     buildToolsVersion '29.0.2'
-
 
     defaultConfig {
         minSdkVersion 14
