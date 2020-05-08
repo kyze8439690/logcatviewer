@@ -9,6 +9,7 @@ import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.os.Build;
 import android.os.IBinder;
+import android.util.TypedValue;
 import android.view.ContextThemeWrapper;
 import android.view.Display;
 import android.view.Gravity;
@@ -60,6 +61,12 @@ public class FloatingLogcatService extends Service {
         }
 
         mBinding = ActivityLogcatBinding.inflate(LayoutInflater.from(mContext));
+        TypedValue typedValue = new TypedValue();
+        if (mBinding != null && mContext.getTheme().resolveAttribute(
+                android.R.attr.windowBackground, typedValue, true)) {
+            int colorWindowBackground = typedValue.data;
+            mBinding.getRoot().setBackgroundColor(colorWindowBackground);
+        }
 
         initViews();
         startReadLogcat();
@@ -100,11 +107,10 @@ public class FloatingLogcatService extends Service {
                             | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
 
                     PixelFormat.TRANSLUCENT);
-            params.alpha = 1.0f;
+            params.alpha = .8f;
             params.dimAmount = 0f;
             params.gravity = Gravity.CENTER;
             params.windowAnimations = android.R.style.Animation_Dialog;
-            params.setTitle("Logcat Viewer");
 
             if (height > width) {
                 params.width = (int) (width * .7);
@@ -117,8 +123,6 @@ public class FloatingLogcatService extends Service {
             wm.addView(mBinding.root, params);
         }
 
-        mBinding.toolbar.setNavigationIcon(R.drawable.ic_action_close);
-        mBinding.list.setBackgroundResource(R.color.logcat_floating_bg);
         mBinding.toolbar.getLayoutParams().height = getResources().getDimensionPixelSize(
                 R.dimen.floating_toolbar_height);
         mBinding.toolbar.setNavigationOnClickListener(new View.OnClickListener() {

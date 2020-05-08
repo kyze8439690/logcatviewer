@@ -69,16 +69,17 @@ public class LogcatAdapter extends BaseAdapter implements Filterable {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        View item = convertView;
         Holder holder;
-        if (item == null) {
-            item = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_logcat, parent, false);
-            holder = new Holder(item);
+        if (convertView == null) {
+            ItemLogcatBinding binding = ItemLogcatBinding.inflate(
+                    LayoutInflater.from(parent.getContext()), parent, false);
+            holder = new Holder(binding);
+            convertView = binding.getRoot();
         } else {
-            holder = (Holder) item.getTag();
+            holder = (Holder) convertView.getTag();
         }
         holder.parse(getItem(position));
-        return item;
+        return convertView;
     }
 
     @Override
@@ -126,19 +127,17 @@ public class LogcatAdapter extends BaseAdapter implements Filterable {
 
     public static class Holder {
 
-        private static final SimpleDateFormat sDateFormat = new SimpleDateFormat(
-                "MM-dd hh:mm:ss.SSS", Locale.getDefault());
-
         private ItemLogcatBinding mBinding;
 
-        Holder(View item) {
-            mBinding = ItemLogcatBinding.bind(item);
-            item.setTag(this);
+        Holder(ItemLogcatBinding binding) {
+            mBinding = binding;
+            binding.getRoot().setTag(this);
         }
 
         void parse(LogItem data) {
             mBinding.time.setText(String.format(Locale.getDefault(),"%s %d-%d/%s",
-                    sDateFormat.format(data.time), data.processId, data.threadId, data.tag));
+                    new SimpleDateFormat("MM-dd hh:mm:ss.SSS", Locale.getDefault())
+                            .format(data.time), data.processId, data.threadId, data.tag));
             mBinding.content.setText(data.content);
             mBinding.tag.setText(data.priority);
             mBinding.tag.setBackgroundResource(data.getColorRes());
