@@ -12,6 +12,7 @@ import android.os.IBinder;
 import android.view.ContextThemeWrapper;
 import android.view.Display;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -19,10 +20,10 @@ import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Spinner;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.Toolbar;
+
+import com.github.logviewer.databinding.ActivityLogcatBinding;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -35,13 +36,10 @@ public class FloatingLogcatService extends Service {
         context.startService(new Intent(context, FloatingLogcatService.class));
     }
 
-    private View mRoot;
-    private Toolbar mToolbar;
-    private Spinner mSpinner;
-    private ListView mList;
-
+    @Nullable private ActivityLogcatBinding mBinding = null;
     private LogcatAdapter mAdapter = new LogcatAdapter();
     private volatile boolean mReading = false;
+    private Context mContext;
 
     @Nullable
     @Override
@@ -50,16 +48,18 @@ public class FloatingLogcatService extends Service {
     }
 
     @Override
+    public void onCreate() {
+        super.onCreate();
+        mContext = new ContextThemeWrapper(this, R.style.Theme_MaterialComponents_DayNight);
+    }
+
+    @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (mReading) {
             return super.onStartCommand(intent, flags, startId);
         }
 
-        ContextThemeWrapper context = new ContextThemeWrapper(this, R.style.Theme_AppCompat_NoActionBar);
-        mRoot = View.inflate(context, R.layout.activity_logcat, null);
-        mToolbar = mRoot.findViewById(R.id.toolbar);
-        mSpinner = mRoot.findViewById(R.id.spinner);
-        mList = mRoot.findViewById(R.id.list);
+        mBinding = ActivityLogcatBinding.inflate(LayoutInflater.from(mContext));
 
         initViews();
         startReadLogcat();
@@ -70,8 +70,8 @@ public class FloatingLogcatService extends Service {
     @Override
     public void onDestroy() {
         WindowManager wm = (WindowManager) getSystemService(WINDOW_SERVICE);
-        if (wm != null && mRoot != null) {
-            wm.removeView(mRoot);
+        if (wm != null && mBinding != null) {
+            wm.removeView(mBinding.root);
         }
 
         stopReadLogcat();
@@ -82,7 +82,7 @@ public class FloatingLogcatService extends Service {
     private void initViews() {
         final WindowManager.LayoutParams params;
         final WindowManager wm = (WindowManager) getSystemService(WINDOW_SERVICE);
-        if (wm == null) {
+        if (wm == null || mBinding == null) {
             return;
         } else {
             Display display = wm.getDefaultDisplay();
@@ -114,25 +114,25 @@ public class FloatingLogcatService extends Service {
                 params.height = (int) (height * .8);
             }
 
-            wm.addView(mRoot, params);
+            wm.addView(mBinding.root, params);
         }
 
-        mToolbar.setNavigationIcon(R.drawable.ic_action_close);
-        mList.setBackgroundResource(R.color.logcat_floating_bg);
-        mToolbar.getLayoutParams().height = getResources().getDimensionPixelSize(
+        mBinding.toolbar.setNavigationIcon(R.drawable.ic_action_close);
+        mBinding.list.setBackgroundResource(R.color.logcat_floating_bg);
+        mBinding.toolbar.getLayoutParams().height = getResources().getDimensionPixelSize(
                 R.dimen.floating_toolbar_height);
-        mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
+        mBinding.toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 stopSelf();
             }
         });
 
-        ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(this,
+        ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(mContext,
                 R.array.logcat_spinner, R.layout.item_logcat_dropdown);
         spinnerAdapter.setDropDownViewResource(R.layout.item_logcat_dropdown);
-        mSpinner.setAdapter(spinnerAdapter);
-        mSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        mBinding.spinner.setAdapter(spinnerAdapter);
+        mBinding.spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String filter = getResources().getStringArray(R.array.logcat_spinner)[position];
@@ -145,17 +145,17 @@ public class FloatingLogcatService extends Service {
             }
         });
 
-        mList.setTranscriptMode(ListView.TRANSCRIPT_MODE_NORMAL);
-        mList.setStackFromBottom(true);
-        mList.setAdapter(mAdapter);
-        mList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        mBinding.list.setTranscriptMode(ListView.TRANSCRIPT_MODE_NORMAL);
+        mBinding.list.setStackFromBottom(true);
+        mBinding.list.setAdapter(mAdapter);
+        mBinding.list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 LogcatDetailActivity.launch(getApplicationContext(), mAdapter.getItem(position));
             }
         });
 
-        mToolbar.setOnTouchListener(new View.OnTouchListener() {
+        mBinding.toolbar.setOnTouchListener(new View.OnTouchListener() {
 
             boolean mIntercepted = false;
             int mLastX;
@@ -192,7 +192,7 @@ public class FloatingLogcatService extends Service {
                                 params.x += deltaX;
                                 params.y += deltaY;
                                 mIntercepted = true;
-                                wm.updateViewLayout(mRoot, params);
+                                wm.updateViewLayout(mBinding.root, params);
                             }
                             else{
                                 mIntercepted = false;
@@ -226,12 +226,14 @@ public class FloatingLogcatService extends Service {
                         }
                         try {
                             final LogItem item = new LogItem(line);
-                            mList.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    mAdapter.append(item);
-                                }
-                            });
+                            if (mBinding != null) {
+                                mBinding.list.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        mAdapter.append(item);
+                                    }
+                                });
+                            }
                         } catch (ParseException | NumberFormatException | IllegalStateException e) {
                             e.printStackTrace();
                         }
