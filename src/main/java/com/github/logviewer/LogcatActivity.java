@@ -30,6 +30,11 @@ import java.text.ParseException;
 
 public class LogcatActivity extends AppCompatActivity {
 
+    public static void start(Context context) {
+        Intent starter = new Intent(context, LogcatActivity.class);
+        context.startActivity(starter);
+    }
+
     private static final int REQUEST_SCREEN_OVERLAY = 23453;
 
     private ActivityLogcatBinding mBinding;
