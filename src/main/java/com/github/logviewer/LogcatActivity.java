@@ -1,7 +1,6 @@
 package com.github.logviewer;
 
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -96,7 +95,6 @@ public class LogcatActivity extends AppCompatActivity {
             mAdapter.clear();
             return true;
         } else if (item.getItemId() == R.id.export) {
-            @SuppressLint("StaticFieldLeak")
             ExportLogFileTask task = new ExportLogFileTask(getExternalCacheDir()) {
                 @Override
                 protected void onPostExecute(File file) {
