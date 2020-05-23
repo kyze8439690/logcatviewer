@@ -1,6 +1,7 @@
 package com.github.logviewer;
 
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -30,7 +31,10 @@ import java.text.ParseException;
 public class LogcatActivity extends AppCompatActivity {
 
     public static void start(Context context) {
-        Intent starter = new Intent(context, LogcatActivity.class);
+        @SuppressLint("InlinedApi")
+        Intent starter = new Intent(context, LogcatActivity.class)
+                .addFlags(Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(starter);
     }
 
