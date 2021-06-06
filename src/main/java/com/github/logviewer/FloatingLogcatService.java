@@ -24,7 +24,7 @@ import android.widget.ListView;
 
 import androidx.annotation.Nullable;
 
-import com.github.logviewer.databinding.ActivityLogcatBinding;
+import com.github.logviewer.databinding.LogcatViewerActivityLogcatBinding;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -45,7 +45,7 @@ public class FloatingLogcatService extends Service {
                 .putStringArrayListExtra("exclude_list", list));
     }
 
-    @Nullable private ActivityLogcatBinding mBinding = null;
+    @Nullable private LogcatViewerActivityLogcatBinding mBinding = null;
     private final LogcatAdapter mAdapter = new LogcatAdapter();
     private volatile boolean mReading = false;
     private final List<Pattern> mExcludeList = new ArrayList<>();
@@ -69,7 +69,7 @@ public class FloatingLogcatService extends Service {
             return super.onStartCommand(intent, flags, startId);
         }
 
-        mBinding = ActivityLogcatBinding.inflate(LayoutInflater.from(mThemedContext));
+        mBinding = LogcatViewerActivityLogcatBinding.inflate(LayoutInflater.from(mThemedContext));
         TypedValue typedValue = new TypedValue();
         if (mBinding != null && mThemedContext.getTheme().resolveAttribute(
                 android.R.attr.windowBackground, typedValue, true)) {
@@ -142,13 +142,13 @@ public class FloatingLogcatService extends Service {
         mBinding.toolbar.setNavigationOnClickListener(v -> stopSelf());
 
         ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(mThemedContext,
-                R.array.logcat_spinner, R.layout.item_logcat_dropdown);
-        spinnerAdapter.setDropDownViewResource(R.layout.item_logcat_dropdown);
+                R.array.logcat_viewer_logcat_spinner, R.layout.logcat_viewer_item_logcat_dropdown);
+        spinnerAdapter.setDropDownViewResource(R.layout.logcat_viewer_item_logcat_dropdown);
         mBinding.spinner.setAdapter(spinnerAdapter);
         mBinding.spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String filter = getResources().getStringArray(R.array.logcat_spinner)[position];
+                String filter = getResources().getStringArray(R.array.logcat_viewer_logcat_spinner)[position];
                 mAdapter.getFilter().filter(filter);
             }
 

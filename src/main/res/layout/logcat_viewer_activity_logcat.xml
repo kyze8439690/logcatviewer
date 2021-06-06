@@ -20,7 +20,7 @@
             android:id="@+id/spinner"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            tools:listitem="@layout/item_logcat_dropdown"
+            tools:listitem="@layout/logcat_viewer_item_logcat_dropdown"
             />
 
     </androidx.appcompat.widget.Toolbar>
@@ -29,7 +29,7 @@
         android:id="@+id/list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:listitem="@layout/item_logcat"
+        tools:listitem="@layout/logcat_viewer_item_logcat"
         />
 
 </LinearLayout>

@@ -19,7 +19,7 @@ import android.widget.ListView;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.github.logviewer.databinding.ActivityLogcatBinding;
+import com.github.logviewer.databinding.LogcatViewerActivityLogcatBinding;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.BufferedReader;
@@ -53,7 +53,7 @@ public class LogcatActivity extends AppCompatActivity {
 
     private static final int REQUEST_SCREEN_OVERLAY = 23453;
 
-    private ActivityLogcatBinding mBinding;
+    private LogcatViewerActivityLogcatBinding mBinding;
 
     private final LogcatAdapter mAdapter = new LogcatAdapter();
     private boolean mReading = false;
@@ -62,7 +62,7 @@ public class LogcatActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mBinding = ActivityLogcatBinding.inflate(getLayoutInflater());
+        mBinding = LogcatViewerActivityLogcatBinding.inflate(getLayoutInflater());
         setContentView(mBinding.getRoot());
 
         setSupportActionBar(mBinding.toolbar);
@@ -76,13 +76,13 @@ public class LogcatActivity extends AppCompatActivity {
         }
 
         ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(this,
-                R.array.logcat_spinner, R.layout.item_logcat_dropdown);
-        spinnerAdapter.setDropDownViewResource(R.layout.item_logcat_dropdown);
+                R.array.logcat_viewer_logcat_spinner, R.layout.logcat_viewer_item_logcat_dropdown);
+        spinnerAdapter.setDropDownViewResource(R.layout.logcat_viewer_item_logcat_dropdown);
         mBinding.spinner.setAdapter(spinnerAdapter);
         mBinding.spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String filter = getResources().getStringArray(R.array.logcat_spinner)[position];
+                String filter = getResources().getStringArray(R.array.logcat_viewer_logcat_spinner)[position];
                 mAdapter.getFilter().filter(filter);
             }
 
@@ -122,7 +122,7 @@ public class LogcatActivity extends AppCompatActivity {
                 @Override
                 protected void onPostExecute(File file) {
                     if (file == null) {
-                        Snackbar.make(mBinding.root, R.string.create_log_file_failed, Snackbar.LENGTH_SHORT)
+                        Snackbar.make(mBinding.root, R.string.logcat_viewer_create_log_file_failed, Snackbar.LENGTH_SHORT)
                                 .show();
                     } else {
                         Intent shareIntent = new Intent(Intent.ACTION_SEND);
@@ -132,7 +132,7 @@ public class LogcatActivity extends AppCompatActivity {
                         shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
                         if (getPackageManager().queryIntentActivities(
                                 shareIntent, 0).isEmpty()) {
-                            Snackbar.make(mBinding.root, R.string.not_support_on_this_device,
+                            Snackbar.make(mBinding.root, R.string.logcat_viewer_not_support_on_this_device,
                                     Snackbar.LENGTH_SHORT).show();
                         } else {
                             startActivity(shareIntent);
@@ -148,7 +148,7 @@ public class LogcatActivity extends AppCompatActivity {
                 Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                         Uri.parse("package:" + getPackageName()));
                 if (getPackageManager().queryIntentActivities(intent, 0).isEmpty()) {
-                    Snackbar.make(mBinding.root, R.string.not_support_on_this_device,
+                    Snackbar.make(mBinding.root, R.string.logcat_viewer_not_support_on_this_device,
                             Snackbar.LENGTH_SHORT).show();
                 } else {
                     startActivityForResult(intent, REQUEST_SCREEN_OVERLAY);

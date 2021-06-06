@@ -10,7 +10,7 @@ import android.view.MenuItem;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.github.logviewer.databinding.ActivityLogcatDetailBinding;
+import com.github.logviewer.databinding.LogcatViewerActivityLogcatDetailBinding;
 
 import java.text.SimpleDateFormat;
 import java.util.Locale;
@@ -32,7 +32,8 @@ public class LogcatDetailActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ActivityLogcatDetailBinding binding = ActivityLogcatDetailBinding.inflate(getLayoutInflater());
+        LogcatViewerActivityLogcatDetailBinding binding =
+                LogcatViewerActivityLogcatDetailBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         if (getSupportActionBar() != null) {

@@ -10,7 +10,7 @@ import android.widget.Filterable;
 
 import androidx.annotation.Nullable;
 
-import com.github.logviewer.databinding.ItemLogcatBinding;
+import com.github.logviewer.databinding.LogcatViewerItemLogcatBinding;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -71,7 +71,7 @@ public class LogcatAdapter extends BaseAdapter implements Filterable {
     public View getView(int position, View convertView, ViewGroup parent) {
         Holder holder;
         if (convertView == null) {
-            ItemLogcatBinding binding = ItemLogcatBinding.inflate(
+            LogcatViewerItemLogcatBinding binding = LogcatViewerItemLogcatBinding.inflate(
                     LayoutInflater.from(parent.getContext()), parent, false);
             holder = new Holder(binding);
             convertView = binding.getRoot();
@@ -127,9 +127,9 @@ public class LogcatAdapter extends BaseAdapter implements Filterable {
 
     public static class Holder {
 
-        private ItemLogcatBinding mBinding;
+        private LogcatViewerItemLogcatBinding mBinding;
 
-        Holder(ItemLogcatBinding binding) {
+        Holder(LogcatViewerItemLogcatBinding binding) {
             mBinding = binding;
             binding.getRoot().setTag(this);
         }
