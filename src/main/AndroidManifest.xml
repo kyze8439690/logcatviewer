@@ -22,6 +22,16 @@
 
         <service android:name="com.github.logviewer.FloatingLogcatService"/>
 
+        <provider
+            android:name="com.github.logviewer.LogcatFileProvider"
+            android:authorities="${applicationId}.logcat_fileprovider"
+            android:grantUriPermissions="true"
+            android:exported="false">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/logcat_filepaths" />
+        </provider>
+
     </application>
 
 </manifest>
