@@ -13,11 +13,19 @@
 
 2. Add launch code in your code:
 
-    ```java
-    public void launchLogcatViewer() {
-       LogcatActivity.launch(getContext());
-    }
+    - Start logcat viewer
+    ```kotlin
+    LogcatActivity.start(getContext())
     ```
+   
+   - Start logcat viewer with log exclude rule
+   ```kotlin
+   val logcatExcludeRules = listOf(
+       Pattern.compile(".*]: processMotionEvent MotionEvent \\{ action=ACTION_.*"),
+       Pattern.compile(".*]: dispatchPointerEvent handled=true, event=MotionEvent \\{ action=ACTION_.*")
+   )
+   LogcatActivity.start(getContext(), logcatExcludeRules)
+   ```
 
 ### Screenshot
 
