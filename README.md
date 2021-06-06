@@ -21,7 +21,7 @@
 
 ### Screenshot
 
-![](https://raw.githubusercontent.com/kyze8439690/logcatviewer/master/screenshot/1.jpg)
-![](https://raw.githubusercontent.com/kyze8439690/logcatviewer/master/screenshot/2.jpg)
-![](https://raw.githubusercontent.com/kyze8439690/logcatviewer/master/screenshot/3.jpg)
-![](https://raw.githubusercontent.com/kyze8439690/logcatviewer/master/screenshot/4.jpg)
+<img src="https://raw.githubusercontent.com/kyze8439690/logcatviewer/master/screenshot/1.jpg" width="360">
+<img src="https://raw.githubusercontent.com/kyze8439690/logcatviewer/master/screenshot/2.jpg" width="360">
+<img src="https://raw.githubusercontent.com/kyze8439690/logcatviewer/master/screenshot/3.jpg" width="360">
+<img src="https://raw.githubusercontent.com/kyze8439690/logcatviewer/master/screenshot/4.jpg" width="360">
