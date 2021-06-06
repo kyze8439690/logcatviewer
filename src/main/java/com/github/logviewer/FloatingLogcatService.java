@@ -30,17 +30,26 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Pattern;
 
 public class FloatingLogcatService extends Service {
 
-    public static void launch(Context context) {
-        context.startService(new Intent(context, FloatingLogcatService.class));
+    public static void launch(Context context, List<Pattern> excludeList) {
+        ArrayList<String> list = new ArrayList<>();
+        for (Pattern pattern : excludeList) {
+            list.add(pattern.pattern());
+        }
+        context.startService(new Intent(context, FloatingLogcatService.class)
+                .putStringArrayListExtra("exclude_list", list));
     }
 
     @Nullable private ActivityLogcatBinding mBinding = null;
-    private LogcatAdapter mAdapter = new LogcatAdapter();
+    private final LogcatAdapter mAdapter = new LogcatAdapter();
     private volatile boolean mReading = false;
-    private Context mContext;
+    private final List<Pattern> mExcludeList = new ArrayList<>();
+    private Context mThemedContext;
 
     @Nullable
     @Override
@@ -51,7 +60,7 @@ public class FloatingLogcatService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        mContext = new ContextThemeWrapper(this, R.style.Theme_MaterialComponents_DayNight);
+        mThemedContext = new ContextThemeWrapper(this, R.style.Theme_MaterialComponents_DayNight);
     }
 
     @Override
@@ -60,12 +69,17 @@ public class FloatingLogcatService extends Service {
             return super.onStartCommand(intent, flags, startId);
         }
 
-        mBinding = ActivityLogcatBinding.inflate(LayoutInflater.from(mContext));
+        mBinding = ActivityLogcatBinding.inflate(LayoutInflater.from(mThemedContext));
         TypedValue typedValue = new TypedValue();
-        if (mBinding != null && mContext.getTheme().resolveAttribute(
+        if (mBinding != null && mThemedContext.getTheme().resolveAttribute(
                 android.R.attr.windowBackground, typedValue, true)) {
             int colorWindowBackground = typedValue.data;
             mBinding.getRoot().setBackgroundColor(colorWindowBackground);
+        }
+
+        List<String> excludeList = intent.getStringArrayListExtra("exclude_list");
+        for (String pattern : excludeList) {
+            mExcludeList.add(Pattern.compile(pattern));
         }
 
         initViews();
@@ -125,14 +139,9 @@ public class FloatingLogcatService extends Service {
 
         mBinding.toolbar.getLayoutParams().height = getResources().getDimensionPixelSize(
                 R.dimen.floating_toolbar_height);
-        mBinding.toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                stopSelf();
-            }
-        });
+        mBinding.toolbar.setNavigationOnClickListener(v -> stopSelf());
 
-        ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(mContext,
+        ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(mThemedContext,
                 R.array.logcat_spinner, R.layout.item_logcat_dropdown);
         spinnerAdapter.setDropDownViewResource(R.layout.item_logcat_dropdown);
         mBinding.spinner.setAdapter(spinnerAdapter);
@@ -152,12 +161,8 @@ public class FloatingLogcatService extends Service {
         mBinding.list.setTranscriptMode(ListView.TRANSCRIPT_MODE_NORMAL);
         mBinding.list.setStackFromBottom(true);
         mBinding.list.setAdapter(mAdapter);
-        mBinding.list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                LogcatDetailActivity.launch(getApplicationContext(), mAdapter.getItem(position));
-            }
-        });
+        mBinding.list.setOnItemClickListener((parent, view, position, id) ->
+                LogcatDetailActivity.launch(getApplicationContext(), mAdapter.getItem(position)));
 
         mBinding.toolbar.setOnTouchListener(new View.OnTouchListener() {
 
@@ -166,7 +171,7 @@ public class FloatingLogcatService extends Service {
             int mLastY;
             int mFirstX;
             int mFirstY;
-            int mTouchSlop = ViewConfiguration.get(getApplicationContext()).getScaledTouchSlop();
+            final int mTouchSlop = ViewConfiguration.get(getApplicationContext()).getScaledTouchSlop();
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -228,15 +233,20 @@ public class FloatingLogcatService extends Service {
                         if (LogItem.IGNORED_LOG.contains(line)) {
                             continue;
                         }
+                        boolean skip = false;
+                        for (Pattern pattern : mExcludeList) {
+                            if (pattern.matcher(line).matches()) {
+                                skip = true;
+                                break;
+                            }
+                        }
+                        if (skip) {
+                            continue;
+                        }
                         try {
                             final LogItem item = new LogItem(line);
                             if (mBinding != null) {
-                                mBinding.list.post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        mAdapter.append(item);
-                                    }
-                                });
+                                mBinding.list.post(() -> mAdapter.append(item));
                             }
                         } catch (ParseException | NumberFormatException | IllegalStateException e) {
                             e.printStackTrace();

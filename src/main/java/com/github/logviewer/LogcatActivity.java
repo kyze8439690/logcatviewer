@@ -27,14 +27,27 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.regex.Pattern;
 
 public class LogcatActivity extends AppCompatActivity {
 
     public static void start(Context context) {
+        start(context, Collections.emptyList());
+    }
+
+    public static void start(Context context, List<Pattern> excludeList) {
+        ArrayList<String> list = new ArrayList<>();
+        for (Pattern pattern : excludeList) {
+            list.add(pattern.pattern());
+        }
         @SuppressLint("InlinedApi")
         Intent starter = new Intent(context, LogcatActivity.class)
                 .addFlags(Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                .putStringArrayListExtra("exclude_list", list);
         context.startActivity(starter);
     }
 
@@ -42,8 +55,9 @@ public class LogcatActivity extends AppCompatActivity {
 
     private ActivityLogcatBinding mBinding;
 
-    private LogcatAdapter mAdapter = new LogcatAdapter();
+    private final LogcatAdapter mAdapter = new LogcatAdapter();
     private boolean mReading = false;
+    private final List<Pattern> mExcludeList = new ArrayList<>();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -54,6 +68,11 @@ public class LogcatActivity extends AppCompatActivity {
         setSupportActionBar(mBinding.toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+
+        List<String> excludeList = getIntent().getStringArrayListExtra("exclude_list");
+        for (String pattern : excludeList) {
+            mExcludeList.add(Pattern.compile(pattern));
         }
 
         ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(this,
@@ -135,7 +154,7 @@ public class LogcatActivity extends AppCompatActivity {
                     startActivityForResult(intent, REQUEST_SCREEN_OVERLAY);
                 }
             } else {
-                FloatingLogcatService.launch(context);
+                FloatingLogcatService.launch(context, mExcludeList);
                 finish();
             }
             return true;
@@ -149,7 +168,7 @@ public class LogcatActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_SCREEN_OVERLAY && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
                 && Settings.canDrawOverlays(getApplicationContext())) {
-            FloatingLogcatService.launch(getApplicationContext());
+            FloatingLogcatService.launch(getApplicationContext(), mExcludeList);
             finish();
         }
     }
@@ -181,14 +200,19 @@ public class LogcatActivity extends AppCompatActivity {
                         if (LogItem.IGNORED_LOG.contains(line)) {
                             continue;
                         }
+                        boolean skip = false;
+                        for (Pattern pattern : mExcludeList) {
+                            if (pattern.matcher(line).matches()) {
+                                skip = true;
+                                break;
+                            }
+                        }
+                        if (skip) {
+                            continue;
+                        }
                         try {
                             final LogItem item = new LogItem(line);
-                            mBinding.list.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    mAdapter.append(item);
-                                }
-                            });
+                            mBinding.list.post(() -> mAdapter.append(item));
                         } catch (ParseException | NumberFormatException | IllegalStateException e) {
                             e.printStackTrace();
                         }
