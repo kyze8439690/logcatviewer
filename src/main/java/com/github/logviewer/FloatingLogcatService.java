@@ -60,7 +60,7 @@ public class FloatingLogcatService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        mThemedContext = new ContextThemeWrapper(this, R.style.Theme_MaterialComponents_DayNight);
+        mThemedContext = new ContextThemeWrapper(this, R.style.Theme_Material3_DayNight);
     }
 
     @Override
