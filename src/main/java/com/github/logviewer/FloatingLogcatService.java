@@ -221,7 +221,7 @@ public class FloatingLogcatService extends Service {
     }
 
     private void startReadLogcat() {
-        new Thread() {
+        new Thread("logcat-service") {
             @Override
             public void run() {
                 super.run();

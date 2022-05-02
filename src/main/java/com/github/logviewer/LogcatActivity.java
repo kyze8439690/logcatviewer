@@ -186,7 +186,7 @@ public class LogcatActivity extends AppCompatActivity {
     }
 
     private void startReadLogcat() {
-        new Thread() {
+        new Thread("logcat-activity") {
             @Override
             public void run() {
                 super.run();
