@@ -9,7 +9,6 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -18,6 +17,7 @@ import android.widget.ListView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import com.github.logviewer.databinding.LogcatViewerActivityLogcatBinding;
 import com.google.android.material.snackbar.Snackbar;
@@ -32,7 +32,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
-public class LogcatActivity extends AppCompatActivity {
+public class LogcatActivity extends AppCompatActivity implements Toolbar.OnMenuItemClickListener {
 
     public static void start(Context context) {
         start(context, Collections.emptyList());
@@ -64,11 +64,9 @@ public class LogcatActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         mBinding = LogcatViewerActivityLogcatBinding.inflate(getLayoutInflater());
         setContentView(mBinding.getRoot());
-
-        setSupportActionBar(mBinding.toolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }
+        mBinding.toolbar.setNavigationOnClickListener(v -> onBackPressed());
+        mBinding.toolbar.inflateMenu(R.menu.logcat);
+        mBinding.toolbar.setOnMenuItemClickListener(this);
 
         List<String> excludeList = getIntent().getStringArrayListExtra("exclude_list");
         for (String pattern : excludeList) {
@@ -95,72 +93,8 @@ public class LogcatActivity extends AppCompatActivity {
         mBinding.list.setTranscriptMode(ListView.TRANSCRIPT_MODE_NORMAL);
         mBinding.list.setStackFromBottom(true);
         mBinding.list.setAdapter(mAdapter);
-        mBinding.list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                LogcatDetailActivity.launch(LogcatActivity.this, mAdapter.getItem(position));
-            }
-        });
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.logcat, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            finish();
-            return true;
-        } else if (item.getItemId() == R.id.clear) {
-            mAdapter.clear();
-            return true;
-        } else if (item.getItemId() == R.id.export) {
-            ExportLogFileTask task = new ExportLogFileTask(getExternalCacheDir()) {
-                @Override
-                protected void onPostExecute(File file) {
-                    if (file == null) {
-                        Snackbar.make(mBinding.root, R.string.logcat_viewer_create_log_file_failed, Snackbar.LENGTH_SHORT)
-                                .show();
-                    } else {
-                        Intent shareIntent = new Intent(Intent.ACTION_SEND);
-                        shareIntent.setType("text/plain");
-                        Uri uri = LogcatFileProvider.getUriForFile(getApplicationContext(),
-                                getPackageName() + ".logcat_fileprovider", file);
-                        shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
-                        if (getPackageManager().queryIntentActivities(
-                                shareIntent, 0).isEmpty()) {
-                            Snackbar.make(mBinding.root, R.string.logcat_viewer_not_support_on_this_device,
-                                    Snackbar.LENGTH_SHORT).show();
-                        } else {
-                            startActivity(shareIntent);
-                        }
-                    }
-                }
-            };
-            task.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, mAdapter.getData());
-            return true;
-        } else if (item.getItemId() == R.id.floating) {
-            Context context = getApplicationContext();
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(context)) {
-                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                        Uri.parse("package:" + getPackageName()));
-                if (getPackageManager().queryIntentActivities(intent, 0).isEmpty()) {
-                    Snackbar.make(mBinding.root, R.string.logcat_viewer_not_support_on_this_device,
-                            Snackbar.LENGTH_SHORT).show();
-                } else {
-                    startActivityForResult(intent, REQUEST_SCREEN_OVERLAY);
-                }
-            } else {
-                FloatingLogcatService.launch(context, mExcludeList);
-                finish();
-            }
-            return true;
-        } else {
-            return super.onOptionsItemSelected(item);
-        }
+        mBinding.list.setOnItemClickListener((parent, view, position, id) ->
+                LogcatDetailActivity.launch(LogcatActivity.this, mAdapter.getItem(position)));
     }
 
     @Override
@@ -235,5 +169,57 @@ public class LogcatActivity extends AppCompatActivity {
 
     private void stopReadLogcat() {
         mReading = false;
+    }
+
+    @Override
+    public boolean onMenuItemClick(MenuItem item) {
+        if (item.getItemId() == R.id.clear) {
+            mAdapter.clear();
+            return true;
+        } else if (item.getItemId() == R.id.export) {
+            @SuppressLint("StaticFieldLeak")
+            ExportLogFileTask task = new ExportLogFileTask(getExternalCacheDir()) {
+                @Override
+                protected void onPostExecute(File file) {
+                    if (file == null) {
+                        Snackbar.make(mBinding.root, R.string.logcat_viewer_create_log_file_failed, Snackbar.LENGTH_SHORT)
+                                .show();
+                    } else {
+                        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                        shareIntent.setType("text/plain");
+                        Uri uri = LogcatFileProvider.getUriForFile(getApplicationContext(),
+                                getPackageName() + ".logcat_fileprovider", file);
+                        shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
+                        if (getPackageManager().queryIntentActivities(
+                                shareIntent, 0).isEmpty()) {
+                            Snackbar.make(mBinding.root, R.string.logcat_viewer_not_support_on_this_device,
+                                    Snackbar.LENGTH_SHORT).show();
+                        } else {
+                            startActivity(shareIntent);
+                        }
+                    }
+                }
+            };
+            task.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, mAdapter.getData());
+            return true;
+        } else if (item.getItemId() == R.id.floating) {
+            Context context = getApplicationContext();
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(context)) {
+                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        Uri.parse("package:" + getPackageName()));
+                if (getPackageManager().queryIntentActivities(intent, 0).isEmpty()) {
+                    Snackbar.make(mBinding.root, R.string.logcat_viewer_not_support_on_this_device,
+                            Snackbar.LENGTH_SHORT).show();
+                } else {
+                    startActivityForResult(intent, REQUEST_SCREEN_OVERLAY);
+                }
+            } else {
+                FloatingLogcatService.launch(context, mExcludeList);
+                finish();
+            }
+            return true;
+        } else {
+            return false;
+        }
     }
 }
