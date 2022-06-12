@@ -43,12 +43,17 @@ public class LogcatActivity extends AppCompatActivity implements Toolbar.OnMenuI
         for (Pattern pattern : excludeList) {
             list.add(pattern.pattern());
         }
+        Intent starter = getIntent(context, list);
+        context.startActivity(starter);
+    }
+
+    public static Intent getIntent(Context context, ArrayList<String> list) {
         @SuppressLint("InlinedApi")
         Intent starter = new Intent(context, LogcatActivity.class)
                 .addFlags(Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 .putStringArrayListExtra("exclude_list", list);
-        context.startActivity(starter);
+        return starter;
     }
 
     private static final int REQUEST_SCREEN_OVERLAY = 23453;
