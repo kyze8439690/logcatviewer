@@ -26,12 +26,15 @@ import androidx.annotation.Nullable;
 
 import com.github.logviewer.databinding.LogcatViewerActivityLogcatBinding;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.Scanner;
 import java.util.regex.Pattern;
 
 public class FloatingLogcatService extends Service {
@@ -45,7 +48,8 @@ public class FloatingLogcatService extends Service {
                 .putStringArrayListExtra("exclude_list", list));
     }
 
-    @Nullable private LogcatViewerActivityLogcatBinding mBinding = null;
+    @Nullable
+    private LogcatViewerActivityLogcatBinding mBinding = null;
     private final LogcatAdapter mAdapter = new LogcatAdapter();
     private volatile boolean mReading = false;
     private final List<Pattern> mExcludeList = new ArrayList<>();
@@ -180,7 +184,7 @@ public class FloatingLogcatService extends Service {
                 int totalDeltaX = mLastX - mFirstX;
                 int totalDeltaY = mLastY - mFirstY;
 
-                switch(event.getActionMasked()) {
+                switch (event.getActionMasked()) {
                     case MotionEvent.ACTION_DOWN:
                         mLastX = (int) event.getRawX();
                         mLastY = (int) event.getRawY();
@@ -204,11 +208,10 @@ public class FloatingLogcatService extends Service {
                                 params.y += deltaY;
                                 mIntercepted = true;
                                 wm.updateViewLayout(mBinding.root, params);
-                            }
-                            else{
+                            } else {
                                 mIntercepted = false;
                             }
-                        }else{
+                        } else {
                             mIntercepted = false;
                         }
                         break;
@@ -220,18 +223,28 @@ public class FloatingLogcatService extends Service {
         });
     }
 
+    private Date latestTime;
+
     private void startReadLogcat() {
         new Thread("logcat-service") {
             @Override
             public void run() {
                 super.run();
                 mReading = true;
-                BufferedReader reader = null;
+                Process process = null;
+                Scanner reader = null;
                 try {
-                    Process process = new ProcessBuilder("logcat", "-v", "threadtime").start();
-                    reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                    String line;
-                    while (mReading && (line = reader.readLine()) != null) {
+                    ArrayList<String> cmd = new ArrayList<>(Arrays.asList("logcat", "-v", "threadtime"));
+                    if (latestTime != null) {
+                        SimpleDateFormat sdf = new SimpleDateFormat("MM-dd HH:mm:ss.mmm", Locale.getDefault());
+                        cmd.add("-T");
+                        cmd.add(sdf.format(latestTime));
+                    }
+
+                    process = new ProcessBuilder(cmd).start();
+                    reader = new Scanner(process.getInputStream());
+                    while (mReading && reader.hasNextLine()) {
+                        String line = reader.nextLine();
                         if (LogItem.IGNORED_LOG.contains(line)) {
                             continue;
                         }
@@ -247,24 +260,18 @@ public class FloatingLogcatService extends Service {
                         }
                         try {
                             final LogItem item = new LogItem(line);
-                            if (mBinding != null) {
-                                mBinding.list.post(() -> mAdapter.append(item));
-                            }
+                            latestTime = item.time;
+                            if (mBinding != null) mBinding.list.post(() -> mAdapter.append(item));
                         } catch (ParseException | NumberFormatException | IllegalStateException e) {
                             e.printStackTrace();
                         }
                     }
-                    stopReadLogcat();
                 } catch (IOException e) {
                     e.printStackTrace();
+                } finally {
+                    if (process != null) process.destroy();
+                    if (reader != null) reader.close();
                     stopReadLogcat();
-                }
-                if (reader != null) {
-                    try {
-                        reader.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
                 }
             }
         }.start();

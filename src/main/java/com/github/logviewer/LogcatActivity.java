@@ -22,14 +22,17 @@ import androidx.appcompat.widget.Toolbar;
 import com.github.logviewer.databinding.LogcatViewerActivityLogcatBinding;
 import com.google.android.material.snackbar.Snackbar;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.Scanner;
 import java.util.regex.Pattern;
 
 public class LogcatActivity extends AppCompatActivity implements Toolbar.OnMenuItemClickListener {
@@ -124,18 +127,28 @@ public class LogcatActivity extends AppCompatActivity implements Toolbar.OnMenuI
         stopReadLogcat();
     }
 
+    private Date latestTime;
+
     private void startReadLogcat() {
         new Thread("logcat-activity") {
             @Override
             public void run() {
                 super.run();
                 mReading = true;
-                BufferedReader reader = null;
+                Process process = null;
+                Scanner reader = null;
                 try {
-                    Process process = new ProcessBuilder("logcat", "-v", "threadtime").start();
-                    reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                    String line;
-                    while (mReading && (line = reader.readLine()) != null) {
+                    ArrayList<String> cmd = new ArrayList<>(Arrays.asList("logcat", "-v", "threadtime"));
+                    if (latestTime != null) {
+                        SimpleDateFormat sdf = new SimpleDateFormat("MM-dd HH:mm:ss.mmm", Locale.getDefault());
+                        cmd.add("-T");
+                        cmd.add(sdf.format(latestTime));
+                    }
+                     process = new ProcessBuilder(cmd).start();
+                     reader = new Scanner(process.getInputStream());
+
+                    while (mReading && reader.hasNextLine()) {
+                        String line = reader.nextLine();
                         if (LogItem.IGNORED_LOG.contains(line)) {
                             continue;
                         }
@@ -151,22 +164,18 @@ public class LogcatActivity extends AppCompatActivity implements Toolbar.OnMenuI
                         }
                         try {
                             final LogItem item = new LogItem(line);
+                            latestTime = item.time;
                             mBinding.list.post(() -> mAdapter.append(item));
                         } catch (ParseException | NumberFormatException | IllegalStateException e) {
                             e.printStackTrace();
                         }
                     }
-                    stopReadLogcat();
                 } catch (IOException e) {
                     e.printStackTrace();
+                } finally {
+                    if (process != null) process.destroy();
+                    if (reader != null) reader.close();
                     stopReadLogcat();
-                }
-                if (reader != null) {
-                    try {
-                        reader.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
                 }
             }
         }.start();
