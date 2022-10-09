@@ -6,15 +6,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -35,6 +34,8 @@ import java.util.Locale;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
+import kotlin.Unit;
+
 public class LogcatActivity extends AppCompatActivity implements Toolbar.OnMenuItemClickListener {
 
     public static void start(Context context) {
@@ -51,21 +52,16 @@ public class LogcatActivity extends AppCompatActivity implements Toolbar.OnMenuI
     }
 
     public static Intent getIntent(Context context, ArrayList<String> list) {
-        @SuppressLint("InlinedApi")
-        Intent starter = new Intent(context, LogcatActivity.class)
-                .addFlags(Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        return new Intent(context, LogcatActivity.class)
                 .putStringArrayListExtra("exclude_list", list);
-        return starter;
     }
-
-    private static final int REQUEST_SCREEN_OVERLAY = 23453;
 
     private LogcatViewerActivityLogcatBinding mBinding;
 
     private final LogcatAdapter mAdapter = new LogcatAdapter();
     private boolean mReading = false;
     private final List<Pattern> mExcludeList = new ArrayList<>();
+    private ActivityResultLauncher<Void> mLauncher;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -103,16 +99,13 @@ public class LogcatActivity extends AppCompatActivity implements Toolbar.OnMenuI
         mBinding.list.setAdapter(mAdapter);
         mBinding.list.setOnItemClickListener((parent, view, position, id) ->
                 LogcatDetailActivity.launch(LogcatActivity.this, mAdapter.getItem(position)));
-    }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_SCREEN_OVERLAY && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
-                && Settings.canDrawOverlays(getApplicationContext())) {
-            FloatingLogcatService.launch(getApplicationContext(), mExcludeList);
-            finish();
-        }
+        mLauncher = registerForActivityResult(new RequestOverlayPermission(this), result -> {
+            if (result) {
+                FloatingLogcatService.launch(getApplicationContext(), mExcludeList);
+                finish();
+            }
+        });
     }
 
     @Override
@@ -217,20 +210,7 @@ public class LogcatActivity extends AppCompatActivity implements Toolbar.OnMenuI
             task.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, mAdapter.getData());
             return true;
         } else if (item.getItemId() == R.id.floating) {
-            Context context = getApplicationContext();
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(context)) {
-                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                        Uri.parse("package:" + getPackageName()));
-                if (getPackageManager().queryIntentActivities(intent, 0).isEmpty()) {
-                    Snackbar.make(mBinding.root, R.string.logcat_viewer_not_support_on_this_device,
-                            Snackbar.LENGTH_SHORT).show();
-                } else {
-                    startActivityForResult(intent, REQUEST_SCREEN_OVERLAY);
-                }
-            } else {
-                FloatingLogcatService.launch(context, mExcludeList);
-                finish();
-            }
+            mLauncher.launch(null);
             return true;
         } else {
             return false;
