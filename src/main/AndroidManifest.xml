@@ -14,16 +14,6 @@
             android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar"
             />
 
-        <activity
-            android:name="com.github.logviewer.LogcatDetailActivity"
-            android:label="Log detail"
-            android:theme="@style/Theme.MaterialComponents.DayNight"
-            >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.github.logviewer.LogcatActivity"/>
-        </activity>
-
         <service android:name="com.github.logviewer.FloatingLogcatService"/>
 
         <provider

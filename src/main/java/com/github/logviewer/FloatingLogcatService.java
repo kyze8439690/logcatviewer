@@ -168,8 +168,6 @@ public class FloatingLogcatService extends Service {
         mBinding.list.setTranscriptMode(ListView.TRANSCRIPT_MODE_NORMAL);
         mBinding.list.setStackFromBottom(true);
         mBinding.list.setAdapter(mAdapter);
-        mBinding.list.setOnItemClickListener((parent, view, position, id) ->
-                LogcatDetailActivity.launch(getApplicationContext(), mAdapter.getItem(position)));
 
         mBinding.toolbar.setOnTouchListener(new View.OnTouchListener() {
 
