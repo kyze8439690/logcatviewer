@@ -2,6 +2,7 @@
     <string name="logcat_viewer_app_name">LogViewer</string>
     <string name="logcat_viewer_create_log_file_failed">Create log file failed</string>
     <string name="logcat_viewer_not_support_on_this_device">Not supported on this device</string>
+    <string name="logcat_viewer_grant_permission_hint">Please grant display over other apps permission for %s</string>
     <string-array name="logcat_viewer_logcat_spinner">
         <item>Verbose</item>
         <item>Debug</item>
