@@ -18,7 +18,7 @@ import java.util.Locale;
 
 public class LogcatAdapter extends BaseAdapter implements Filterable {
 
-    private ArrayList<LogItem> mData;
+    private final ArrayList<LogItem> mData;
     @Nullable private ArrayList<LogItem> mFilteredData = null;
     @Nullable private String mFilter = null;
 
@@ -127,7 +127,7 @@ public class LogcatAdapter extends BaseAdapter implements Filterable {
 
     public static class Holder {
 
-        private LogcatViewerItemLogcatBinding mBinding;
+        private final LogcatViewerItemLogcatBinding mBinding;
 
         Holder(LogcatViewerItemLogcatBinding binding) {
             mBinding = binding;

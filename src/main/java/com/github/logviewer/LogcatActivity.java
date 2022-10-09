@@ -97,8 +97,6 @@ public class LogcatActivity extends AppCompatActivity implements Toolbar.OnMenuI
         mBinding.list.setTranscriptMode(ListView.TRANSCRIPT_MODE_NORMAL);
         mBinding.list.setStackFromBottom(true);
         mBinding.list.setAdapter(mAdapter);
-        mBinding.list.setOnItemClickListener((parent, view, position, id) ->
-                LogcatDetailActivity.launch(LogcatActivity.this, mAdapter.getItem(position)));
 
         mLauncher = registerForActivityResult(new RequestOverlayPermission(this), result -> {
             if (result) {
