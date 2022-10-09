@@ -146,6 +146,7 @@ public class FloatingLogcatService extends Service {
         mBinding.toolbar.getLayoutParams().height = getResources().getDimensionPixelSize(
                 R.dimen.floating_toolbar_height);
         mBinding.toolbar.setNavigationOnClickListener(v -> stopSelf());
+        mBinding.toolbar.setNavigationIcon(R.drawable.ic_baseline_close_24);
 
         ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(mThemedContext,
                 R.array.logcat_viewer_logcat_spinner, R.layout.logcat_viewer_item_logcat_dropdown);
