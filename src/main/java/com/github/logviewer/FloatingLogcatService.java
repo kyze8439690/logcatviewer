@@ -91,7 +91,7 @@ public class FloatingLogcatService extends Service {
         initViews();
         startReadLogcat();
 
-        return super.onStartCommand(intent, flags, startId);
+        return START_REDELIVER_INTENT;
     }
 
     @Override
