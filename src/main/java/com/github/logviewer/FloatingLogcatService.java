@@ -244,7 +244,7 @@ public class FloatingLogcatService extends Service {
                     reader = new Scanner(process.getInputStream());
                     while (mReading && reader.hasNextLine()) {
                         String line = reader.nextLine();
-                        if (LogItem.IGNORED_LOG.contains(line)) {
+                        if (LogItem.IGNORED_LOG.matcher(line).matches()) {
                             continue;
                         }
                         boolean skip = false;

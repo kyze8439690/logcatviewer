@@ -44,11 +44,7 @@ public class LogItem implements Parcelable {
         add(PRIORITY_FATAL);
     }};
 
-    static final ArrayList<String> IGNORED_LOG = new ArrayList<String>() {{
-        add("--------- beginning of crash");
-        add("--------- beginning of main");
-        add("--------- beginning of system");
-    }};
+    static final Pattern IGNORED_LOG = Pattern.compile("--------- beginning of (.*)");
 
     public Date time;
     public int processId;
