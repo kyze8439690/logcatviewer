@@ -131,7 +131,7 @@ public class LogcatActivity extends AppCompatActivity implements Toolbar.OnMenuI
                 try {
                     ArrayList<String> cmd = new ArrayList<>(Arrays.asList("logcat", "-v", "threadtime"));
                     if (latestTime != null) {
-                        SimpleDateFormat sdf = new SimpleDateFormat("MM-dd HH:mm:ss.mmm", Locale.getDefault());
+                        SimpleDateFormat sdf = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss.mmm", Locale.getDefault());
                         cmd.add("-T");
                         cmd.add(sdf.format(latestTime));
                     }
@@ -140,7 +140,7 @@ public class LogcatActivity extends AppCompatActivity implements Toolbar.OnMenuI
 
                     while (mReading && reader.hasNextLine()) {
                         String line = reader.nextLine();
-                        if (LogItem.IGNORED_LOG.contains(line)) {
+                        if (LogItem.IGNORED_LOG.matcher(line).matches()) {
                             continue;
                         }
                         boolean skip = false;
