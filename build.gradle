@@ -21,12 +21,12 @@ android {
         viewBinding = true
     }
 
-    compileSdkVersion 33
-    buildToolsVersion '33.0.0'
+    compileSdkVersion 34
+    buildToolsVersion '34.0.0'
 
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 33
+        targetSdkVersion 34
     }
 
     buildTypes {
@@ -40,6 +40,6 @@ android {
 
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.9.0'
+    implementation 'com.google.android.material:material:1.10.0'
     implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
 }
