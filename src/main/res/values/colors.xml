@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="white">#fff</color>
-    <color name="grey">#bbb</color>
+    <color name="logcat_white">#fff</color>
+    <color name="logcat_grey">#bbb</color>
 
     <color name="logcat_floating_bg">#c02a2a2a</color>
 
