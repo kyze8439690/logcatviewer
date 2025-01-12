@@ -73,7 +73,10 @@ class LogcatActivity : AppCompatActivity(), Toolbar.OnMenuItemClickListener {
         binding.spinner.onItemSelectedListener =
             object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(
-                    parent: AdapterView<*>?, view: View?, position: Int, id: Long
+                    parent: AdapterView<*>?,
+                    view: View?,
+                    position: Int,
+                    id: Long
                 ) {
                     val filter = resources
                         .getStringArray(R.array.logcat_viewer_logcat_spinner)[position]
