@@ -15,8 +15,10 @@ import androidx.annotation.NonNull;
 
 import org.jetbrains.annotations.Nullable;
 
+import kotlin.Unit;
 
-public class RequestOverlayPermission extends ActivityResultContract<Void, Boolean> {
+
+public class RequestOverlayPermission extends ActivityResultContract<Unit, Boolean> {
 
     private final Context mContext;
 
@@ -37,7 +39,7 @@ public class RequestOverlayPermission extends ActivityResultContract<Void, Boole
 
     @NonNull
     @Override
-    public Intent createIntent(@NonNull Context context, Void unused) {
+    public Intent createIntent(@NonNull Context context, Unit unused) {
         return getIntent(context);
     }
 
@@ -48,7 +50,7 @@ public class RequestOverlayPermission extends ActivityResultContract<Void, Boole
 
     @Nullable
     @Override
-    public SynchronousResult<Boolean> getSynchronousResult(@NonNull Context context, Void input) {
+    public SynchronousResult<Boolean> getSynchronousResult(@NonNull Context context, Unit input) {
         if (VERSION.SDK_INT < M || Settings.canDrawOverlays(context)) {
             return new SynchronousResult<>(true);
         }
