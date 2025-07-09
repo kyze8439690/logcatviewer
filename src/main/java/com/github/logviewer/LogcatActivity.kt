@@ -5,7 +5,6 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import com.github.logviewer.databinding.LogcatViewerActivityLogcatBinding
 import java.util.regex.Pattern
 
 class LogcatActivity : AppCompatActivity() {
@@ -27,13 +26,9 @@ class LogcatActivity : AppCompatActivity() {
         }
     }
 
-    private lateinit var binding: LogcatViewerActivityLogcatBinding
-
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        binding = LogcatViewerActivityLogcatBinding.inflate(layoutInflater)
-        setContentView(binding.root)
 
         val excludeList: MutableList<Pattern> = ArrayList()
         intent.getStringArrayListExtra("exclude_list")?.let {
@@ -43,7 +38,7 @@ class LogcatActivity : AppCompatActivity() {
         }
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
-                .replace(R.id.container, LogcatFragment.newInstance(excludeList))
+                .replace(android.R.id.content, LogcatFragment.newInstance(excludeList))
                 .commit()
         }
     }
