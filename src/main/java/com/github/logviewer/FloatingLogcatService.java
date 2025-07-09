@@ -24,7 +24,7 @@ import android.widget.ListView;
 
 import androidx.annotation.Nullable;
 
-import com.github.logviewer.databinding.LogcatViewerActivityLogcatBinding;
+import com.github.logviewer.databinding.LogcatViewerFragmentLogcatBinding;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -49,7 +49,7 @@ public class FloatingLogcatService extends Service {
     }
 
     @Nullable
-    private LogcatViewerActivityLogcatBinding mBinding = null;
+    private LogcatViewerFragmentLogcatBinding mBinding = null;
     private final LogcatAdapter mAdapter = new LogcatAdapter();
     private volatile boolean mReading = false;
     private final List<Pattern> mExcludeList = new ArrayList<>();
@@ -75,7 +75,7 @@ public class FloatingLogcatService extends Service {
             return super.onStartCommand(intent, flags, startId);
         }
 
-        mBinding = LogcatViewerActivityLogcatBinding.inflate(LayoutInflater.from(mThemedContext));
+        mBinding = LogcatViewerFragmentLogcatBinding.inflate(LayoutInflater.from(mThemedContext));
         TypedValue typedValue = new TypedValue();
         if (mBinding != null && mThemedContext.getTheme().resolveAttribute(
                 android.R.attr.windowBackground, typedValue, true)) {
