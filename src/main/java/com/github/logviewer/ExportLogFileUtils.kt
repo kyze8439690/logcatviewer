@@ -13,7 +13,9 @@ import java.util.Locale
 
 object ExportLogFileUtils {
 
-    suspend fun exportLogs(cacheDir: File?, logs: Array<LogItem>?): File? = withContext(Dispatchers.IO) {
+    suspend fun exportLogs(cacheDir: File?, logs: Array<LogItem>?): File? = withContext(
+        Dispatchers.IO
+    ) {
         if (cacheDir == null || cacheDir.isFile() || logs.isNullOrEmpty()) {
             null
         } else {

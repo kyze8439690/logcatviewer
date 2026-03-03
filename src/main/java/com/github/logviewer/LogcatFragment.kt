@@ -93,7 +93,8 @@ class LogcatFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         binding.toolbar.setOnMenuItemClickListener(this)
         val spinnerAdapter = ArrayAdapter.createFromResource(
             requireContext(),
-            R.array.logcat_viewer_logcat_spinner, R.layout.logcat_viewer_item_logcat_dropdown
+            R.array.logcat_viewer_logcat_spinner,
+            R.layout.logcat_viewer_item_logcat_dropdown
         )
         spinnerAdapter.setDropDownViewResource(R.layout.logcat_viewer_item_logcat_dropdown)
         binding.spinner.adapter = spinnerAdapter
@@ -195,7 +196,8 @@ class LogcatFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         R.id.export -> {
             lifecycleScope.launch {
                 val exportedFile = ExportLogFileUtils.exportLogs(
-                    requireContext().externalCacheDir, adapter.data
+                    requireContext().externalCacheDir,
+                    adapter.data
                 )
                 if (exportedFile == null) {
                     Snackbar.make(
@@ -214,7 +216,8 @@ class LogcatFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     shareIntent.putExtra(Intent.EXTRA_STREAM, uri)
                     if (
                         requireContext().packageManager.queryIntentActivities(
-                            shareIntent, 0
+                            shareIntent,
+                            0
                         ).isEmpty()
                     ) {
                         Snackbar.make(
