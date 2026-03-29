@@ -20,6 +20,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.github.logviewer.databinding.LogcatViewerFragmentLogcatBinding
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.launch
 import java.io.IOException
 import java.text.ParseException
 import java.text.SimpleDateFormat
@@ -27,7 +28,6 @@ import java.util.Date
 import java.util.Locale
 import java.util.Scanner
 import java.util.regex.Pattern
-import kotlinx.coroutines.launch
 
 class LogcatFragment :
     Fragment(),
