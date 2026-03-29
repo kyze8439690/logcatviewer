@@ -21,10 +21,9 @@ class LogcatActivity : AppCompatActivity() {
             context.startActivity(starter)
         }
 
-        private fun getIntent(context: Context?, list: ArrayList<String>?): Intent {
-            return Intent(context, LogcatActivity::class.java)
+        private fun getIntent(context: Context?, list: ArrayList<String>?): Intent =
+            Intent(context, LogcatActivity::class.java)
                 .putStringArrayListExtra("exclude_list", list)
-        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
