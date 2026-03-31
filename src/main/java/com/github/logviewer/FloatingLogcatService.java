@@ -65,7 +65,7 @@ public class FloatingLogcatService extends Service {
     public void onCreate() {
         super.onCreate();
         mThemedContext = new ContextThemeWrapper(
-                this, com.google.android.material.R.style.Theme_MaterialComponents_DayNight
+                this, com.google.android.material.R.style.Theme_Material3_DayNight
         );
     }
 

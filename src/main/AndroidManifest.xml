@@ -11,7 +11,7 @@
     <application>
         <activity
             android:name="com.github.logviewer.LogcatActivity"
-            android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar"
+            android:theme="@style/Theme.Material3.DayNight.NoActionBar"
             />
 
         <service android:name="com.github.logviewer.FloatingLogcatService"/>
