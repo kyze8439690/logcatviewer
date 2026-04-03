@@ -9,10 +9,12 @@ import androidx.appcompat.app.AppCompatActivity
 import java.util.regex.Pattern
 
 class LogcatActivity : AppCompatActivity() {
-
     companion object {
         @JvmOverloads
-        fun start(context: Context, excludeList: List<Pattern> = emptyList()) {
+        fun start(
+            context: Context,
+            excludeList: List<Pattern> = emptyList(),
+        ) {
             val list = ArrayList<String>()
             for (pattern in excludeList) {
                 list.add(pattern.pattern())
@@ -21,7 +23,10 @@ class LogcatActivity : AppCompatActivity() {
             context.startActivity(starter)
         }
 
-        private fun getIntent(context: Context?, list: ArrayList<String>?): Intent =
+        private fun getIntent(
+            context: Context?,
+            list: ArrayList<String>?,
+        ): Intent =
             Intent(context, LogcatActivity::class.java)
                 .putStringArrayListExtra("exclude_list", list)
     }
@@ -40,7 +45,8 @@ class LogcatActivity : AppCompatActivity() {
             }
         }
         if (savedInstanceState == null) {
-            supportFragmentManager.beginTransaction()
+            supportFragmentManager
+                .beginTransaction()
                 .replace(android.R.id.content, LogcatFragment.newInstance(excludeList))
                 .commit()
         }

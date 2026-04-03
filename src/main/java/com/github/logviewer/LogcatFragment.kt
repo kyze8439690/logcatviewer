@@ -32,7 +32,6 @@ import java.util.regex.Pattern
 class LogcatFragment :
     Fragment(),
     Toolbar.OnMenuItemClickListener {
-
     companion object {
         @JvmStatic
         fun newInstance(excludeList: List<Pattern> = emptyList()): LogcatFragment {
@@ -58,24 +57,28 @@ class LogcatFragment :
                 excludeList.add(Pattern.compile(pattern))
             }
         }
-        launcher = registerForActivityResult(RequestOverlayPermission(requireContext())) { result ->
-            if (result) {
-                FloatingLogcatService.launch(requireContext(), excludeList)
-                activity?.finish()
+        launcher =
+            registerForActivityResult(RequestOverlayPermission(requireContext())) { result ->
+                if (result) {
+                    FloatingLogcatService.launch(requireContext(), excludeList)
+                    activity?.finish()
+                }
             }
-        }
     }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         binding = LogcatViewerFragmentLogcatBinding.inflate(inflater, container, false)
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
             val statusBarHeight: Int
             val navigationBarHeight: Int
@@ -93,11 +96,12 @@ class LogcatFragment :
             activity?.onBackPressedDispatcher?.onBackPressed()
         }
         binding.toolbar.setOnMenuItemClickListener(this)
-        val spinnerAdapter = ArrayAdapter.createFromResource(
-            requireContext(),
-            R.array.logcat_viewer_logcat_spinner,
-            R.layout.logcat_viewer_item_logcat_dropdown
-        )
+        val spinnerAdapter =
+            ArrayAdapter.createFromResource(
+                requireContext(),
+                R.array.logcat_viewer_logcat_spinner,
+                R.layout.logcat_viewer_item_logcat_dropdown,
+            )
         spinnerAdapter.setDropDownViewResource(R.layout.logcat_viewer_item_logcat_dropdown)
         binding.spinner.adapter = spinnerAdapter
         binding.spinner.onItemSelectedListener =
@@ -106,10 +110,11 @@ class LogcatFragment :
                     parent: AdapterView<*>?,
                     view: View?,
                     position: Int,
-                    id: Long
+                    id: Long,
                 ) {
-                    val filter = resources
-                        .getStringArray(R.array.logcat_viewer_logcat_spinner)[position]
+                    val filter =
+                        resources
+                            .getStringArray(R.array.logcat_viewer_logcat_spinner)[position]
                     adapter.filter.filter(filter)
                 }
 
@@ -190,59 +195,66 @@ class LogcatFragment :
         reading = false
     }
 
-    override fun onMenuItemClick(item: MenuItem) = when (item.itemId) {
-        R.id.clear -> {
-            adapter.clear()
-            true
-        }
+    override fun onMenuItemClick(item: MenuItem) =
+        when (item.itemId) {
+            R.id.clear -> {
+                adapter.clear()
+                true
+            }
 
-        R.id.export -> {
-            lifecycleScope.launch {
-                val exportedFile = ExportLogFileUtils.exportLogs(
-                    requireContext().externalCacheDir,
-                    adapter.data
-                )
-                if (exportedFile == null) {
-                    Snackbar.make(
-                        binding.root,
-                        R.string.logcat_viewer_create_log_file_failed,
-                        Snackbar.LENGTH_SHORT
-                    ).show()
-                } else {
-                    val shareIntent = Intent(Intent.ACTION_SEND)
-                    shareIntent.setType("text/plain")
-                    val uri = LogcatFileProvider.getUriForFile(
-                        requireContext(),
-                        "${requireContext().packageName}.logcat_fileprovider",
-                        exportedFile
-                    )
-                    shareIntent.putExtra(Intent.EXTRA_STREAM, uri)
-                    if (
-                        requireContext().packageManager.queryIntentActivities(
-                            shareIntent,
-                            0
-                        ).isEmpty()
-                    ) {
-                        Snackbar.make(
-                            binding.root,
-                            R.string.logcat_viewer_not_support_on_this_device,
-                            Snackbar.LENGTH_SHORT
-                        ).show()
+            R.id.export -> {
+                lifecycleScope.launch {
+                    val exportedFile =
+                        ExportLogFileUtils.exportLogs(
+                            requireContext().externalCacheDir,
+                            adapter.data,
+                        )
+                    if (exportedFile == null) {
+                        Snackbar
+                            .make(
+                                binding.root,
+                                R.string.logcat_viewer_create_log_file_failed,
+                                Snackbar.LENGTH_SHORT,
+                            ).show()
                     } else {
-                        startActivity(shareIntent)
+                        val shareIntent = Intent(Intent.ACTION_SEND)
+                        shareIntent.setType("text/plain")
+                        val uri =
+                            LogcatFileProvider.getUriForFile(
+                                requireContext(),
+                                "${requireContext().packageName}.logcat_fileprovider",
+                                exportedFile,
+                            )
+                        shareIntent.putExtra(Intent.EXTRA_STREAM, uri)
+                        if (
+                            requireContext()
+                                .packageManager
+                                .queryIntentActivities(
+                                    shareIntent,
+                                    0,
+                                ).isEmpty()
+                        ) {
+                            Snackbar
+                                .make(
+                                    binding.root,
+                                    R.string.logcat_viewer_not_support_on_this_device,
+                                    Snackbar.LENGTH_SHORT,
+                                ).show()
+                        } else {
+                            startActivity(shareIntent)
+                        }
                     }
                 }
+                true
             }
-            true
-        }
 
-        R.id.floating -> {
-            launcher.launch(Unit)
-            true
-        }
+            R.id.floating -> {
+                launcher.launch(Unit)
+                true
+            }
 
-        else -> {
-            false
+            else -> {
+                false
+            }
         }
-    }
 }
