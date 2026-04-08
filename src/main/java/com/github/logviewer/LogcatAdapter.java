@@ -21,6 +21,7 @@ public class LogcatAdapter extends BaseAdapter implements Filterable {
     private final ArrayList<LogItem> mData;
     @Nullable private ArrayList<LogItem> mFilteredData = null;
     @Nullable private String mFilter = null;
+    @Nullable private String mTextFilter = null;
 
     LogcatAdapter() {
         mData = new ArrayList<>();
@@ -29,8 +30,8 @@ public class LogcatAdapter extends BaseAdapter implements Filterable {
     void append(LogItem item) {
         synchronized (LogcatAdapter.class) {
             mData.add(item);
-            if (mFilter != null && mFilteredData != null) {
-                if (!item.isFiltered(mFilter)) {
+            if (!isItemFiltered(item)) {
+                if (mFilteredData != null) {
                     mFilteredData.add(item);
                 }
             }
@@ -44,6 +45,44 @@ public class LogcatAdapter extends BaseAdapter implements Filterable {
             mFilteredData = null;
             notifyDataSetChanged();
         }
+    }
+
+    public void setTextFilter(@Nullable String textFilter) {
+        synchronized (LogcatAdapter.class) {
+            mTextFilter = textFilter;
+            applyFilters();
+        }
+    }
+
+    private void applyFilters() {
+        synchronized (LogcatAdapter.class) {
+            if (mFilter == null && (mTextFilter == null || mTextFilter.isEmpty())) {
+                mFilteredData = null;
+            } else {
+                ArrayList<LogItem> filtered = new ArrayList<>();
+                for (LogItem item : mData) {
+                    if (!isItemFiltered(item)) {
+                        filtered.add(item);
+                    }
+                }
+                mFilteredData = filtered;
+            }
+            notifyDataSetChanged();
+        }
+    }
+
+    private boolean isItemFiltered(LogItem item) {
+        // 检查级别过滤
+        if (mFilter != null && item.isFiltered(mFilter)) {
+            return true;
+        }
+        // 检查文字过滤
+        if (mTextFilter != null && !mTextFilter.isEmpty()) {
+            String searchText = mTextFilter.toLowerCase(java.util.Locale.getDefault());
+            String tagContent = (item.tag + " " + item.content).toLowerCase(java.util.Locale.getDefault());
+            return !tagContent.contains(searchText);
+        }
+        return false;
     }
 
     public LogItem[] getData() {
@@ -90,37 +129,21 @@ public class LogcatAdapter extends BaseAdapter implements Filterable {
                 synchronized (LogcatAdapter.class) {
                     FilterResults results = new FilterResults();
 
-                    if (constraint == null) {
+                    if (constraint == null || constraint.length() == 0) {
                         mFilter = null;
-                        results.count = mData.size();
-                        results.values = null;
-                        return results;
                     } else {
                         mFilter = String.valueOf(constraint.charAt(0));
                     }
 
-                    ArrayList<LogItem> filtered = new ArrayList<>();
-                    for (LogItem item : mData) {
-                        if (!item.isFiltered(mFilter)) {
-                            filtered.add(item);
-                        }
-                    }
-
-                    results.values = filtered;
-                    results.count = filtered.size();
+                    applyFilters();
+                    results.count = mFilteredData != null ? mFilteredData.size() : mData.size();
                     return results;
                 }
             }
 
             @Override
             protected void publishResults(CharSequence constraint, FilterResults results) {
-                if (results.values == null) {
-                    mFilteredData = null;
-                } else {
-                    //noinspection unchecked
-                    mFilteredData = (ArrayList<LogItem>) results.values;
-                }
-                notifyDataSetChanged();
+                // 数据已在 applyFilters 中更新
             }
         };
     }
