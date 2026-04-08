@@ -4,8 +4,7 @@
 
 - Priority filter
 - Clear logcat
-- Export as file 
-- Floating window
+- Export as file
 
 ### Integrate guide
 

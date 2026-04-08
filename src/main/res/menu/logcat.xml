@@ -9,8 +9,4 @@
           android:title="Export..."
           />
 
-    <item android:id="@+id/floating"
-          android:title="Float"
-          />
-
 </menu>

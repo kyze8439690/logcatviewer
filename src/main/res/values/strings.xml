@@ -1,8 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="logcat_viewer_app_name">LogViewer</string>
     <string name="logcat_viewer_create_log_file_failed">Create log file failed</string>
     <string name="logcat_viewer_not_support_on_this_device">Not supported on this device</string>
-    <string name="logcat_viewer_grant_permission_hint">Please grant display over other apps permission for %s</string>
     <string name="logcat_viewer_search_hint">搜索日志...</string>
     <string name="logcat_viewer_empty_result">没有匹配的日志</string>
     <string-array name="logcat_viewer_logcat_spinner">

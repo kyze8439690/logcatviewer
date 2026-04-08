@@ -19,7 +19,6 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.LinearLayout
 import android.widget.ListView
-import androidx.activity.result.ActivityResultLauncher
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -55,7 +54,6 @@ class LogcatFragment :
     private lateinit var binding: LogcatViewerFragmentLogcatBinding
     private val excludeList: MutableList<Pattern> = ArrayList()
     private val adapter = LogcatAdapter()
-    private lateinit var launcher: ActivityResultLauncher<Unit>
     private var reading = false
     private var latestTime: Date? = null
 
@@ -66,13 +64,6 @@ class LogcatFragment :
                 excludeList.add(Pattern.compile(pattern))
             }
         }
-        launcher =
-            registerForActivityResult(RequestOverlayPermission(requireContext())) { result ->
-                if (result) {
-                    FloatingLogcatService.launch(requireContext(), excludeList)
-                    activity?.finish()
-                }
-            }
     }
 
     override fun onCreateView(
@@ -258,11 +249,6 @@ class LogcatFragment :
                         }
                     }
                 }
-                true
-            }
-
-            R.id.floating -> {
-                launcher.launch(Unit)
                 true
             }
 
