@@ -2,6 +2,15 @@ package com.github.logviewer
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
+import androidx.core.content.getSystemService
+import androidx.core.widget.doAfterTextChanged
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -124,6 +133,9 @@ class LogcatFragment :
         binding.list.transcriptMode = ListView.TRANSCRIPT_MODE_NORMAL
         binding.list.isStackFromBottom = true
         binding.list.adapter = adapter
+
+        // 初始化过滤输入框
+        setupTextFilter()
     }
 
     override fun onResume() {
@@ -257,4 +269,42 @@ class LogcatFragment :
                 false
             }
         }
+
+    @OptIn(FlowPreview::class)
+    private fun setupTextFilter() {
+        val textFilterFlow = MutableStateFlow("")
+
+        // 使用 300ms 防抖处理文字变化
+        textFilterFlow
+            .debounce(300)
+            .onEach { filterText ->
+                adapter.setTextFilter(filterText.takeIf { it.isNotEmpty() })
+            }
+            .launchIn(viewLifecycleOwner.lifecycleScope)
+
+        binding.filterInput.doAfterTextChanged { editable ->
+            textFilterFlow.value = editable?.toString() ?: ""
+        }
+
+        // 处理键盘搜索按钮
+        binding.filterInput.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                hideKeyboard()
+                true
+            } else {
+                false
+            }
+        }
+
+        // 处理清空按钮点击（收起键盘）
+        binding.filterInputLayout.setEndIconOnClickListener {
+            binding.filterInput.text?.clear()
+            hideKeyboard()
+        }
+    }
+
+    private fun hideKeyboard() {
+        val imm = requireContext().getSystemService<InputMethodManager>()
+        imm?.hideSoftInputFromWindow(binding.filterInput.windowToken, 0)
+    }
 }
