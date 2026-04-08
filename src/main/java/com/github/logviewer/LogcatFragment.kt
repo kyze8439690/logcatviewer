@@ -119,6 +119,7 @@ class LogcatFragment :
         binding.list.transcriptMode = ListView.TRANSCRIPT_MODE_NORMAL
         binding.list.isStackFromBottom = true
         binding.list.adapter = adapter
+        binding.list.emptyView = binding.emptyView
 
         // 初始化过滤输入框
         setupTextFilter()
