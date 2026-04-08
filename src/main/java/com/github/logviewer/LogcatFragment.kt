@@ -99,6 +99,7 @@ class LogcatFragment :
                 topMargin = statusBarHeight
             }
             binding.list.updatePadding(bottom = navigationBarHeight)
+            binding.filterInputLayout.updatePadding(bottom = navigationBarHeight)
             insets
         }
         binding.toolbar.setNavigationOnClickListener {
