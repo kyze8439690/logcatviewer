@@ -7,3 +7,4 @@ local.properties
 .classpath
 .project
 .settings/org.eclipse.buildship.core.prefs
+docs/
