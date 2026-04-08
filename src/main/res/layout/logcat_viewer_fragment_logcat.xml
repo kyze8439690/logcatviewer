@@ -65,6 +65,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             android:paddingHorizontal="16dp"
             android:paddingVertical="8dp"
+            android:background="?attr/colorSurfaceContainer"
             app:startIconDrawable="@drawable/logcat_ic_baseline_search_24"
             app:endIconMode="clear_text"
             app:hintEnabled="true"

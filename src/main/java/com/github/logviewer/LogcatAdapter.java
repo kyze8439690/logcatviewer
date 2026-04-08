@@ -158,12 +158,13 @@ public class LogcatAdapter extends BaseAdapter implements Filterable {
         }
 
         void parse(LogItem data) {
-            mBinding.time.setText(String.format(Locale.getDefault(),"%s %d-%d/%s",
-                    new SimpleDateFormat("MM-dd hh:mm:ss.SSS", Locale.getDefault())
-                            .format(data.time), data.processId, data.threadId, data.tag));
+            mBinding.time.setText(String.format(Locale.getDefault(), "%s %d-%d",
+                    new SimpleDateFormat("MM-dd HH:mm:ss.SSS", Locale.getDefault())
+                            .format(data.time), data.processId, data.threadId));
             mBinding.content.setText(data.content);
-            mBinding.tag.setText(data.priority);
-            mBinding.tag.setBackgroundResource(data.getColorRes());
+            mBinding.level.setText(data.priority);
+            mBinding.level.setBackgroundResource(data.getColorRes());
+            mBinding.tag.setText(data.tag);
         }
     }
 }

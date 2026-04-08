@@ -1,43 +1,68 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:orientation="vertical"
     android:padding="4dp"
     >
 
-    <TextView
-        android:id="@+id/tag"
-        android:layout_width="16dp"
+    <!-- 第一行：level tag -->
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:textSize="12sp"
-        tools:text="D"
-        android:textStyle="bold"
-        android:textColor="@color/logcat_white"
-        android:background="@color/logcat_debug"
-        />
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        >
 
-    <TextView
-        android:id="@+id/time"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="12sp"
-        android:textColor="?android:attr/textColorSecondary"
-        android:layout_toRightOf="@id/tag"
-        tools:text="10-21 16:01:46.539"
-        android:layout_marginLeft="4dp"
-        />
+        <TextView
+            android:id="@+id/level"
+            android:layout_width="16dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textSize="11sp"
+            tools:text="D"
+            android:textStyle="bold"
+            android:textColor="@color/logcat_white"
+            android:background="@color/logcat_debug"
+            />
 
+        <TextView
+            android:id="@+id/tag"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="12sp"
+            android:textColor="?android:attr/textColorPrimary"
+            tools:text="NetworkController"
+            android:layout_marginStart="6dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            />
+
+    </LinearLayout>
+
+    <!-- 第二行：log content -->
     <TextView
         android:id="@+id/content"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/time"
         android:textColor="?android:attr/textColorPrimary"
         android:textSize="14sp"
-        tools:text="NetworkController.MobileSignalController(2):  showDisableIcon:false"
+        tools:text="showDisableIcon:false"
+        android:layout_marginTop="2dp"
         />
 
-</RelativeLayout>
+    <!-- 第三行：time pid-tid -->
+    <TextView
+        android:id="@+id/time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="11sp"
+        android:textColor="?android:attr/textColorSecondary"
+        tools:text="10-21 16:01:46.539 1234-5678"
+        android:layout_marginTop="2dp"
+        />
+
+</LinearLayout>
