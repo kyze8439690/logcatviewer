@@ -83,3 +83,23 @@ LogcatActivity.start(context, excludeRules)
 - Java/Kotlin target: 21
 - ViewBinding enabled (DataBinding disabled)
 - Dependencies: AppCompat, Activity KTX, Material Design, Lifecycle Extensions
+
+## Resource Naming Conventions
+
+All resources must use the `logcat_` prefix to avoid conflicts with the host application:
+
+| Resource Type | Prefix | Example |
+|--------------|--------|---------|
+| Layout files | `logcat_viewer_` | `logcat_viewer_fragment_logcat.xml` |
+| Drawable | `logcat_` | `logcat_ic_baseline_search_24.xml` |
+| Colors | `logcat_` | `@color/logcat_fatal` |
+| Strings | `logcat_viewer_` | `@string/logcat_viewer_search_hint` |
+| Dimensions | `logcat_` | `@dimen/logcat_filter_padding_horizontal` |
+| Menus | `logcat_` | `logcat.xml` (menu file) |
+| IDs | `logcat_` | `@+id/logcat_filter_input` |
+
+**Rules:**
+1. Always add `logcat_` prefix to all new resources
+2. Layout files should use `logcat_viewer_` prefix for consistency
+3. String resources should use `logcat_viewer_` prefix for user-facing text
+4. Never use generic names like `fragment_logcat.xml` or `ic_search.xml`

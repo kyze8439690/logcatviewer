@@ -77,14 +77,34 @@ class LogcatFragment :
         view: View,
         savedInstanceState: Bundle?,
     ) {
-        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
+        // 根布局只处理键盘高度的 padding，不处理 navigation bar
+        ViewCompat.setOnApplyWindowInsetsListener(binding.content) { view, insets ->
+            val imeHeight = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
+            view.updatePadding(bottom = imeHeight)
+            insets
+        }
+
+        // AppBarLayout 设置 status bar 高度的 padding top（背景延伸到 status bar 后面）
+        ViewCompat.setOnApplyWindowInsetsListener(binding.appbar) { view, insets ->
+            val statusBarHeight = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
+            view.updatePadding(top = statusBarHeight)
+            insets
+        }
+
+        // 输入框负责 navigation bar padding：
+        // - 键盘收起时：padding bottom = navigation bar 高度 + 8dp（背景延伸到 navigation bar 后面）
+        // - 键盘弹出时：padding bottom = 8dp（去掉 navigation bar 部分，因为键盘已占用空间）
+        ViewCompat.setOnApplyWindowInsetsListener(binding.filterInputLayout) { view, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             val imeHeight = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
 
-            // 键盘弹出时调整 root 的 bottom padding，让输入框保持在键盘上方
-            val bottomPadding = if (imeHeight > 0) imeHeight else systemBars.bottom
-            binding.root.updatePadding(bottom = bottomPadding)
-
+            val navBarPadding = if (imeHeight > 0) 0 else systemBars.bottom
+            view.updatePadding(
+                left = resources.getDimensionPixelSize(R.dimen.logcat_filter_padding_horizontal),
+                right = resources.getDimensionPixelSize(R.dimen.logcat_filter_padding_horizontal),
+                top = resources.getDimensionPixelSize(R.dimen.logcat_filter_padding_vertical),
+                bottom = navBarPadding + resources.getDimensionPixelSize(R.dimen.logcat_filter_padding_vertical)
+            )
             insets
         }
         binding.toolbar.setNavigationOnClickListener {

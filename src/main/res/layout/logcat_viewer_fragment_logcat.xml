@@ -11,12 +11,12 @@
         android:id="@+id/appbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:fitsSystemWindows="true">
+        android:background="?attr/colorSurfaceContainer">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="?attr/actionBarSize"
             app:navigationIcon="?attr/homeAsUpIndicator"
             app:title=""
             app:menu="@menu/logcat">
@@ -25,6 +25,7 @@
                 android:id="@+id/spinner"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
                 tools:listitem="@layout/logcat_viewer_item_logcat_dropdown" />
 
         </androidx.appcompat.widget.Toolbar>
@@ -32,8 +33,11 @@
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <ListView
@@ -63,9 +67,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:layout_constraintBottom_toBottomOf="parent"
-            android:paddingHorizontal="16dp"
-            android:paddingVertical="8dp"
+            android:clipToPadding="false"
             android:background="?attr/colorSurfaceContainer"
+            tools:paddingHorizontal="@dimen/logcat_filter_padding_horizontal"
+            tools:paddingVertical="@dimen/logcat_filter_padding_vertical"
             app:startIconDrawable="@drawable/logcat_ic_baseline_search_24"
             app:endIconMode="clear_text"
             app:hintEnabled="true"
