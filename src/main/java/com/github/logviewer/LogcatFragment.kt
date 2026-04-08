@@ -17,12 +17,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.LinearLayout
 import android.widget.ListView
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -80,17 +78,13 @@ class LogcatFragment :
         savedInstanceState: Bundle?,
     ) {
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
-            val statusBarHeight: Int
-            val navigationBarHeight: Int
-            insets.getInsets(WindowInsetsCompat.Type.systemBars()).apply {
-                statusBarHeight = top
-                navigationBarHeight = bottom
-            }
-            binding.toolbar.updateLayoutParams<LinearLayout.LayoutParams> {
-                topMargin = statusBarHeight
-            }
-            binding.list.updatePadding(bottom = navigationBarHeight)
-            binding.filterInputLayout.updatePadding(bottom = navigationBarHeight)
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val imeHeight = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
+
+            // 键盘弹出时调整 root 的 bottom padding，让输入框保持在键盘上方
+            val bottomPadding = if (imeHeight > 0) imeHeight else systemBars.bottom
+            binding.root.updatePadding(bottom = bottomPadding)
+
             insets
         }
         binding.toolbar.setNavigationOnClickListener {
