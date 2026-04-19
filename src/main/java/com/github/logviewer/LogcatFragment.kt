@@ -103,7 +103,7 @@ class LogcatFragment :
                 left = resources.getDimensionPixelSize(R.dimen.logcat_filter_padding_horizontal),
                 right = resources.getDimensionPixelSize(R.dimen.logcat_filter_padding_horizontal),
                 top = resources.getDimensionPixelSize(R.dimen.logcat_filter_padding_vertical),
-                bottom = navBarPadding + resources.getDimensionPixelSize(R.dimen.logcat_filter_padding_vertical)
+                bottom = navBarPadding + resources.getDimensionPixelSize(R.dimen.logcat_filter_padding_vertical),
             )
             insets
         }
@@ -281,8 +281,7 @@ class LogcatFragment :
             .debounce(300)
             .onEach { filterText ->
                 adapter.setTextFilter(filterText.takeIf { it.isNotEmpty() })
-            }
-            .launchIn(viewLifecycleOwner.lifecycleScope)
+            }.launchIn(viewLifecycleOwner.lifecycleScope)
 
         binding.filterInput.doAfterTextChanged { editable ->
             textFilterFlow.value = editable?.toString() ?: ""
