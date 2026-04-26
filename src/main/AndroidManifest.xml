@@ -1,11 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application>
-        <activity
-            android:name="com.github.logviewer.LogcatActivity"
-            android:theme="@style/Theme.Material3.DayNight.NoActionBar"
-            />
-
         <provider
             android:name="com.github.logviewer.LogcatFileProvider"
             android:authorities="${applicationId}.logcat_fileprovider"

@@ -10,15 +10,19 @@ import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.ListView
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.getSystemService
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.github.logviewer.databinding.LogcatViewerFragmentLogcatBinding
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.FlowPreview
@@ -27,6 +31,8 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import me.zhanghai.android.fastscroll.DefaultAnimationHelper
+import me.zhanghai.android.fastscroll.FastScrollerBuilder
 import java.io.IOException
 import java.text.ParseException
 import java.text.SimpleDateFormat
@@ -39,6 +45,8 @@ class LogcatFragment :
     Fragment(),
     Toolbar.OnMenuItemClickListener {
     companion object {
+        private const val FLUSH_INTERVAL_MS = 50L
+
         @JvmStatic
         fun newInstance(excludeList: List<Pattern> = emptyList()): LogcatFragment {
             val args = Bundle()
@@ -54,6 +62,16 @@ class LogcatFragment :
     private val adapter = LogcatAdapter()
     private var reading = false
     private var latestTime: Date? = null
+
+    @Volatile
+    private var logProcess: Process? = null
+
+    @Volatile
+    private var logReader: Scanner? = null
+    private val logBuffer = ArrayList<LogItem>()
+    private val flushHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    private val flushRunnable = Runnable { flushBuffer() }
+    private var emptyViewObserver: RecyclerView.AdapterDataObserver? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -130,16 +148,57 @@ class LogcatFragment :
                     val filter =
                         resources
                             .getStringArray(R.array.logcat_viewer_logcat_spinner)[position]
-                    adapter.filter.filter(filter)
+                    adapter.setLevelFilter(filter.substring(0, 1))
                 }
 
                 override fun onNothingSelected(parent: AdapterView<*>?) = Unit
             }
 
-        binding.list.transcriptMode = ListView.TRANSCRIPT_MODE_NORMAL
-        binding.list.isStackFromBottom = true
+        binding.list.layoutManager = LinearLayoutManager(requireContext())
+        binding.list.itemAnimator = null
+        binding.list.addItemDecoration(
+            DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL),
+        )
         binding.list.adapter = adapter
-        binding.list.emptyView = binding.emptyView
+        val animHelper = DefaultAnimationHelper(binding.list)
+        animHelper.isScrollbarAutoHideEnabled = false
+        FastScrollerBuilder(binding.list)
+            .useMd2Style()
+            .apply { setAnimationHelper(animHelper) }
+            .build()
+        emptyViewObserver =
+            object : RecyclerView.AdapterDataObserver() {
+                override fun onChanged() = updateEmptyView()
+
+                override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
+                    updateEmptyView()
+                    val lm = binding.list.layoutManager as LinearLayoutManager
+                    val firstVisible = lm.findFirstCompletelyVisibleItemPosition()
+                    if (firstVisible == 0 || firstVisible == RecyclerView.NO_POSITION) {
+                        lm.scrollToPositionWithOffset(0, 0)
+                    }
+                }
+
+                override fun onItemRangeRemoved(positionStart: Int, itemCount: Int) =
+                    updateEmptyView()
+            }
+        emptyViewObserver?.let { adapter.registerAdapterDataObserver(it) }
+        updateEmptyView()
+
+        // 拦截 BACK 键，在 Container Transition 触发 layout 之前先清空 adapter，避免 RecyclerView 被无限高度 measure
+        requireActivity().onBackPressedDispatcher.addCallback(
+            viewLifecycleOwner,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    binding.list.adapter = null
+                    if (parentFragmentManager.backStackEntryCount > 0) {
+                        parentFragmentManager.popBackStack()
+                    } else {
+                        requireActivity().finishAfterTransition()
+                    }
+                }
+            },
+        )
 
         // 初始化过滤输入框
         setupTextFilter()
@@ -153,6 +212,16 @@ class LogcatFragment :
     override fun onPause() {
         super.onPause()
         stopReadLogcat()
+        // 直接销毁进程并关闭 reader，让阻塞的 hasNextLine() 立即返回
+        logProcess?.destroy()
+        logReader?.close()
+        // 取消待执行的 flush 任务，避免 onPause 后继续 post Runnable
+        flushHandler.removeCallbacks(flushRunnable)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        emptyViewObserver?.let { adapter.unregisterAdapterDataObserver(it) }
     }
 
     private fun startReadLogcat() {
@@ -160,17 +229,18 @@ class LogcatFragment :
             override fun run() {
                 super.run()
                 reading = true
-                var process: Process? = null
-                var reader: Scanner? = null
                 try {
                     val cmd = ArrayList(mutableListOf("logcat", "-v", "threadtime"))
                     latestTime?.let {
-                        val sdf = SimpleDateFormat("MM-dd HH:mm:ss.mmm", Locale.getDefault())
+                        val sdf = SimpleDateFormat("MM-dd HH:mm:ss.SSS", Locale.getDefault())
                         cmd.add("-T")
                         cmd.add(sdf.format(it))
                     }
-                    process = ProcessBuilder(cmd).start()
-                    reader = Scanner(process.inputStream)
+                    val process = ProcessBuilder(cmd).start()
+                    logProcess = process
+                    val reader = Scanner(process.inputStream)
+                    logReader = reader
+                    scheduleFlush()
 
                     while (reading && reader.hasNextLine()) {
                         val line = reader.nextLine()
@@ -190,7 +260,15 @@ class LogcatFragment :
                         try {
                             val item = LogItem(line)
                             latestTime = item.time
-                            binding.list.post { adapter.append(item) }
+                            synchronized(logBuffer) {
+                                logBuffer.add(item)
+                                if (logBuffer.size > 1000) {
+                                    logBuffer.subList(0, logBuffer.size - 1000).clear()
+                                }
+                                if (logBuffer.size > 300) {
+                                    Thread.sleep(10)
+                                }
+                            }
                         } catch (e: ParseException) {
                             e.printStackTrace()
                         } catch (e: NumberFormatException) {
@@ -202,9 +280,10 @@ class LogcatFragment :
                 } catch (e: IOException) {
                     e.printStackTrace()
                 } finally {
-                    process?.destroy()
-                    reader?.close()
+                    logProcess?.destroy()
+                    logReader?.close()
                     stopReadLogcat()
+                    flushHandler.removeCallbacks(flushRunnable)
                 }
             }
         }.start()
@@ -212,6 +291,27 @@ class LogcatFragment :
 
     private fun stopReadLogcat() {
         reading = false
+    }
+
+    private fun scheduleFlush() {
+        if (!reading) return
+        flushHandler.postDelayed(flushRunnable, FLUSH_INTERVAL_MS)
+    }
+
+    private fun flushBuffer() {
+        if (!isAdded || !reading) return
+        val batch: ArrayList<LogItem>
+        synchronized(logBuffer) {
+            if (logBuffer.isEmpty()) {
+                scheduleFlush()
+                return
+            }
+            val count = minOf(logBuffer.size, 100)
+            batch = ArrayList(logBuffer.subList(0, count))
+            logBuffer.subList(0, count).clear()
+        }
+        adapter.appendAll(batch)
+        scheduleFlush()
     }
 
     override fun onMenuItemClick(item: MenuItem) =
@@ -226,7 +326,7 @@ class LogcatFragment :
                     val exportedFile =
                         ExportLogFileUtils.exportLogs(
                             requireContext().externalCacheDir,
-                            adapter.data,
+                            adapter.snapshot(),
                         )
                     if (exportedFile == null) {
                         Snackbar
@@ -307,5 +407,11 @@ class LogcatFragment :
     private fun hideKeyboard() {
         val imm = requireContext().getSystemService<InputMethodManager>()
         imm?.hideSoftInputFromWindow(binding.filterInput.windowToken, 0)
+    }
+
+    private fun updateEmptyView() {
+        val empty = adapter.itemCount == 0
+        binding.emptyView.isVisible = empty
+        binding.list.isVisible = !empty
     }
 }

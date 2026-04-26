@@ -53,10 +53,12 @@ android {
     }
 }
 
+//noinspection UseTomlInstead
 dependencies {
-    //noinspection UseTomlInstead
     implementation("androidx.appcompat:appcompat:1.7.1")
-    implementation("androidx.activity:activity-ktx:1.12.2")
+    implementation("androidx.activity:activity-ktx:1.13.0")
     implementation("com.google.android.material:material:1.13.0")
     implementation("androidx.lifecycle:lifecycle-extensions:2.2.0")
+    implementation("androidx.recyclerview:recyclerview:1.4.0")
+    implementation("me.zhanghai.android.fastscroll:library:1.3.0")
 }

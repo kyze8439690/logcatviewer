@@ -1,7 +1,6 @@
 package com.github.logviewer;
 
-import android.os.Parcel;
-import android.os.Parcelable;
+import android.annotation.SuppressLint;
 
 import androidx.annotation.ColorRes;
 
@@ -11,10 +10,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class LogItem implements Parcelable {
+public class LogItem {
 
     private static final String PRIORITY_VERBOSE = "V";
     private static final String PRIORITY_DEBUG = "D";
@@ -25,6 +25,10 @@ public class LogItem implements Parcelable {
 
     private static final Pattern sLogcatPattern = Pattern.compile(
               "([0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3})\\s+(\\d+)\\s+(\\d+)\\s+([VDIWEF])\\s+([^:]+):\\s*(.*)");
+
+    @SuppressLint("ConstantLocale")
+    private static final SimpleDateFormat sDateFormat =
+        new SimpleDateFormat("MM-dd HH:mm:ss.SSS", Locale.getDefault());
 
     private static final HashMap<String, Integer> LOGCAT_COLORS = new HashMap<String, Integer>() {{
         put(PRIORITY_VERBOSE, R.color.logcat_verbose);
@@ -46,13 +50,13 @@ public class LogItem implements Parcelable {
 
     static final Pattern IGNORED_LOG = Pattern.compile("--------- beginning of (.*)");
 
-    public Date time;
-    public int processId;
-    public int threadId;
-    public String priority;
-    public String tag;
-    public String content;
-    public String origin;
+    public final Date time;
+    public final int processId;
+    public final int threadId;
+    public final String priority;
+    public final String tag;
+    public final String content;
+    public final String origin;
 
     LogItem(String line) throws IllegalStateException, ParseException {
         Matcher matcher = sLogcatPattern.matcher(line);
@@ -67,7 +71,7 @@ public class LogItem implements Parcelable {
         String prefixText = matcher.group(5);
         String contentText = matcher.group(6);
 
-        time = new SimpleDateFormat("MM-dd hh:mm:ss.SSS", Locale.getDefault()).parse(timeText);
+        time = sDateFormat.parse(timeText);
         processId = Integer.parseInt(pidText);
         threadId = Integer.parseInt(tidText);
         priority = tagText;
@@ -86,41 +90,21 @@ public class LogItem implements Parcelable {
     }
 
     @Override
-    public int describeContents() {
-        return 0;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        LogItem logItem = (LogItem) o;
+        return processId == logItem.processId &&
+                threadId == logItem.threadId &&
+                Objects.equals(time, logItem.time) &&
+                Objects.equals(priority, logItem.priority) &&
+                Objects.equals(tag, logItem.tag) &&
+                Objects.equals(content, logItem.content) &&
+                Objects.equals(origin, logItem.origin);
     }
 
     @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeLong(this.time != null ? this.time.getTime() : -1);
-        dest.writeInt(this.processId);
-        dest.writeInt(this.threadId);
-        dest.writeString(this.priority);
-        dest.writeString(this.tag);
-        dest.writeString(this.content);
-        dest.writeString(this.origin);
+    public int hashCode() {
+        return Objects.hash(time, processId, threadId, priority, tag, content, origin);
     }
-
-    private LogItem(Parcel in) {
-        long tmpTime = in.readLong();
-        this.time = tmpTime == -1 ? null : new Date(tmpTime);
-        this.processId = in.readInt();
-        this.threadId = in.readInt();
-        this.priority = in.readString();
-        this.tag = in.readString();
-        this.content = in.readString();
-        this.origin = in.readString();
-    }
-
-    public static final Parcelable.Creator<LogItem> CREATOR = new Parcelable.Creator<LogItem>() {
-        @Override
-        public LogItem createFromParcel(Parcel source) {
-            return new LogItem(source);
-        }
-
-        @Override
-        public LogItem[] newArray(int size) {
-            return new LogItem[size];
-        }
-    };
 }
