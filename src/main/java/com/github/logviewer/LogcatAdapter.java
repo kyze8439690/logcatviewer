@@ -93,12 +93,16 @@ public class LogcatAdapter extends BaseAdapter implements Filterable {
 
     @Override
     public int getCount() {
-        return mFilteredData != null ? mFilteredData.size() : mData.size();
+        synchronized (LogcatAdapter.class) {
+            return mFilteredData != null ? mFilteredData.size() : mData.size();
+        }
     }
 
     @Override
     public LogItem getItem(int position) {
-        return mFilteredData != null ? mFilteredData.get(position) : mData.get(position);
+        synchronized (LogcatAdapter.class) {
+            return mFilteredData != null ? mFilteredData.get(position) : mData.get(position);
+        }
     }
 
     @Override
@@ -127,15 +131,13 @@ public class LogcatAdapter extends BaseAdapter implements Filterable {
             @Override
             protected FilterResults performFiltering(CharSequence constraint) {
                 synchronized (LogcatAdapter.class) {
-                    FilterResults results = new FilterResults();
-
                     if (constraint == null || constraint.length() == 0) {
                         mFilter = null;
                     } else {
                         mFilter = String.valueOf(constraint.charAt(0));
                     }
 
-                    applyFilters();
+                    FilterResults results = new FilterResults();
                     results.count = mFilteredData != null ? mFilteredData.size() : mData.size();
                     return results;
                 }
@@ -143,7 +145,9 @@ public class LogcatAdapter extends BaseAdapter implements Filterable {
 
             @Override
             protected void publishResults(CharSequence constraint, FilterResults results) {
-                // 数据已在 applyFilters 中更新
+                synchronized (LogcatAdapter.class) {
+                    applyFilters();
+                }
             }
         };
     }
