@@ -55,11 +55,12 @@ class LogcatAdapter : ListAdapter<LogItem, LogcatAdapter.Holder>(DIFF) {
     fun snapshot(): Array<LogItem> = synchronized(lock) { rawData.toTypedArray() }
 
     private fun computeVisibleLocked(): List<LogItem> {
-        val filtered = if (levelFilter == null && textFilter == null) {
-            rawData
-        } else {
-            rawData.filter { !shouldHide(it) }
-        }
+        val filtered =
+            if (levelFilter == null && textFilter == null) {
+                rawData
+            } else {
+                rawData.filter { !shouldHide(it) }
+            }
         return filtered.reversed()
     }
 
@@ -124,7 +125,7 @@ class LogcatAdapter : ListAdapter<LogItem, LogcatAdapter.Holder>(DIFF) {
                 override fun areContentsTheSame(
                     oldItem: LogItem,
                     newItem: LogItem,
-                ) = oldItem === newItem
+                ) = oldItem == newItem
             }
     }
 }
