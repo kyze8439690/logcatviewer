@@ -7,7 +7,7 @@ buildscript {
     }
     dependencies {
         //noinspection UseTomlInstead
-        classpath("com.android.tools.build:gradle:8.13.2")
+        classpath("com.android.tools.build:gradle:9.1.1")
     }
 }
 
@@ -37,7 +37,7 @@ android {
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
     namespace = "com.github.logviewer"
