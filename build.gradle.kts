@@ -7,7 +7,7 @@ buildscript {
     }
     dependencies {
         //noinspection UseTomlInstead
-        classpath("com.android.tools.build:gradle:9.1.1")
+        classpath("com.android.tools.build:gradle:9.3.1")
     }
 }
 
