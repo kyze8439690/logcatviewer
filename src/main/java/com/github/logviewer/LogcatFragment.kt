@@ -46,6 +46,11 @@ class LogcatFragment :
     Toolbar.OnMenuItemClickListener {
     companion object {
         private const val FLUSH_INTERVAL_MS = 50L
+        private const val MAX_BUFFER_SIZE = 1000
+        private const val THROTTLE_BUFFER_SIZE = 300
+        private const val THROTTLE_SLEEP_MS = 10L
+        private const val FLUSH_BATCH_SIZE = 100
+        private const val TEXT_FILTER_DEBOUNCE_MS = 300L
 
         @JvmStatic
         fun newInstance(excludeList: List<Pattern> = emptyList()): LogcatFragment {
@@ -226,6 +231,7 @@ class LogcatFragment :
 
     private fun startReadLogcat() {
         object : Thread("logcat-activity") {
+            @Suppress("PrintStackTrace")
             override fun run() {
                 super.run()
                 reading = true
@@ -244,37 +250,29 @@ class LogcatFragment :
 
                     while (reading && reader.hasNextLine()) {
                         val line = reader.nextLine()
-                        if (LogItem.IGNORED_LOG.matcher(line).matches()) {
-                            continue
-                        }
-                        var skip = false
-                        for (pattern in excludeList) {
-                            if (pattern.matcher(line).matches()) {
-                                skip = true
-                                break
-                            }
-                        }
-                        if (skip) {
-                            continue
-                        }
-                        try {
-                            val item = LogItem(line)
-                            latestTime = item.time
-                            synchronized(logBuffer) {
-                                logBuffer.add(item)
-                                if (logBuffer.size > 1000) {
-                                    logBuffer.subList(0, logBuffer.size - 1000).clear()
+                        val ignored =
+                            LogItem.IGNORED_LOG.matcher(line).matches() ||
+                                excludeList.any { it.matcher(line).matches() }
+                        if (!ignored) {
+                            try {
+                                val item = LogItem(line)
+                                latestTime = item.time
+                                synchronized(logBuffer) {
+                                    logBuffer.add(item)
+                                    if (logBuffer.size > MAX_BUFFER_SIZE) {
+                                        logBuffer.subList(0, logBuffer.size - MAX_BUFFER_SIZE).clear()
+                                    }
+                                    if (logBuffer.size > THROTTLE_BUFFER_SIZE) {
+                                        Thread.sleep(THROTTLE_SLEEP_MS)
+                                    }
                                 }
-                                if (logBuffer.size > 300) {
-                                    Thread.sleep(10)
-                                }
+                            } catch (e: ParseException) {
+                                e.printStackTrace()
+                            } catch (e: NumberFormatException) {
+                                e.printStackTrace()
+                            } catch (e: IllegalStateException) {
+                                e.printStackTrace()
                             }
-                        } catch (e: ParseException) {
-                            e.printStackTrace()
-                        } catch (e: NumberFormatException) {
-                            e.printStackTrace()
-                        } catch (e: IllegalStateException) {
-                            e.printStackTrace()
                         }
                     }
                 } catch (e: IOException) {
@@ -306,7 +304,7 @@ class LogcatFragment :
                 scheduleFlush()
                 return
             }
-            val count = minOf(logBuffer.size, 100)
+            val count = minOf(logBuffer.size, FLUSH_BATCH_SIZE)
             batch = ArrayList(logBuffer.subList(0, count))
             logBuffer.subList(0, count).clear()
         }
@@ -378,7 +376,7 @@ class LogcatFragment :
 
         // 使用 300ms 防抖处理文字变化
         textFilterFlow
-            .debounce(300)
+            .debounce(TEXT_FILTER_DEBOUNCE_MS)
             .onEach { filterText ->
                 adapter.setTextFilter(filterText.takeIf { it.isNotEmpty() })
             }.launchIn(viewLifecycleOwner.lifecycleScope)

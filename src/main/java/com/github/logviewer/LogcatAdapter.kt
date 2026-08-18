@@ -65,12 +65,12 @@ class LogcatAdapter : ListAdapter<LogItem, LogcatAdapter.Holder>(DIFF) {
     }
 
     private fun shouldHide(item: LogItem): Boolean {
-        levelFilter?.let { if (item.isFiltered(it)) return true }
-        textFilter?.let { needle ->
-            val haystack = "${item.tag} ${item.content}".lowercase(Locale.getDefault())
-            return !haystack.contains(needle)
+        val level = levelFilter
+        if (level != null && item.isFiltered(level)) {
+            return true
         }
-        return false
+        val needle = textFilter
+        return needle != null && !"${item.tag} ${item.content}".lowercase(Locale.getDefault()).contains(needle)
     }
 
     override fun onCreateViewHolder(
