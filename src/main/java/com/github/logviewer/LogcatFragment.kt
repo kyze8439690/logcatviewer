@@ -20,6 +20,7 @@ import androidx.core.view.updatePadding
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.withResumed
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -62,7 +63,8 @@ class LogcatFragment :
         }
     }
 
-    private lateinit var binding: LogcatViewerFragmentLogcatBinding
+    private var _binding: LogcatViewerFragmentLogcatBinding? = null
+    private val binding get() = checkNotNull(_binding)
     private val excludeList: MutableList<Pattern> = ArrayList()
     private val adapter = LogcatAdapter()
     private var reading = false
@@ -92,7 +94,7 @@ class LogcatFragment :
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
-        binding = LogcatViewerFragmentLogcatBinding.inflate(inflater, container, false)
+        _binding = LogcatViewerFragmentLogcatBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -225,8 +227,11 @@ class LogcatFragment :
     }
 
     override fun onDestroyView() {
-        super.onDestroyView()
         emptyViewObserver?.let { adapter.unregisterAdapterDataObserver(it) }
+        emptyViewObserver = null
+        binding.list.adapter = null
+        _binding = null
+        super.onDestroyView()
     }
 
     private fun startReadLogcat() {
@@ -297,7 +302,7 @@ class LogcatFragment :
     }
 
     private fun flushBuffer() {
-        if (!isAdded || !reading) return
+        if (_binding == null || !isAdded || !reading) return
         val batch: ArrayList<LogItem>
         synchronized(logBuffer) {
             if (logBuffer.isEmpty()) {
@@ -320,45 +325,41 @@ class LogcatFragment :
             }
 
             R.id.export -> {
-                lifecycleScope.launch {
+                val owner = viewLifecycleOwner
+                val context = requireContext()
+                owner.lifecycleScope.launch {
                     val exportedFile =
                         ExportLogFileUtils.exportLogs(
-                            requireContext().externalCacheDir,
+                            context.externalCacheDir,
                             adapter.snapshot(),
                         )
-                    if (exportedFile == null) {
-                        Snackbar
-                            .make(
-                                binding.root,
-                                R.string.logcat_viewer_create_log_file_failed,
-                                Snackbar.LENGTH_SHORT,
-                            ).show()
-                    } else {
-                        val shareIntent = Intent(Intent.ACTION_SEND)
-                        shareIntent.setType("text/plain")
-                        val uri =
-                            LogcatFileProvider.getUriForFile(
-                                requireContext(),
-                                "${requireContext().packageName}.logcat_fileprovider",
-                                exportedFile,
-                            )
-                        shareIntent.putExtra(Intent.EXTRA_STREAM, uri)
-                        if (
-                            requireContext()
-                                .packageManager
-                                .queryIntentActivities(
-                                    shareIntent,
-                                    0,
-                                ).isEmpty()
-                        ) {
+                    owner.withResumed {
+                        if (exportedFile == null) {
                             Snackbar
                                 .make(
                                     binding.root,
-                                    R.string.logcat_viewer_not_support_on_this_device,
+                                    R.string.logcat_viewer_create_log_file_failed,
                                     Snackbar.LENGTH_SHORT,
                                 ).show()
                         } else {
-                            startActivity(shareIntent)
+                            val uri = LogcatFileProvider.getUriForFile(
+                                context,
+                                "${context.packageName}.logcat_fileprovider",
+                                exportedFile,
+                            )
+                            val shareIntent = Intent(Intent.ACTION_SEND)
+                                .setType("text/plain")
+                                .putExtra(Intent.EXTRA_STREAM, uri)
+                            if (context.packageManager.queryIntentActivities(shareIntent, 0).isEmpty()) {
+                                Snackbar
+                                    .make(
+                                        binding.root,
+                                        R.string.logcat_viewer_not_support_on_this_device,
+                                        Snackbar.LENGTH_SHORT,
+                                    ).show()
+                            } else {
+                                startActivity(shareIntent)
+                            }
                         }
                     }
                 }
